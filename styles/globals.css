@@ -1,26 +1,91 @@
-html,
-body {
-  padding: 0;
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen,
-    Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+.pkmn-detail {
+	transform: skew(-20deg);
+}
+.pkmn-detail > span {
+	display: block;
+	transform: skew(20deg);
+}
+.bg-normal {
+	background: #a8a77a;
+}
+.bg-fire {
+	background: #ee8130;
+}
+.bg-water {
+	background: #6390f0;
+}
+.bg-electric {
+	background: #f7d02c;
+}
+.bg-grass {
+	background: #7ac74c;
+}
+.bg-ice {
+	background: #96d9d6;
+}
+.bg-fighting {
+	background: #c22e28;
+}
+.bg-poison {
+	background: #a33ea1;
+}
+.bg-ground {
+	background: #e2bf65;
+}
+.bg-flying {
+	background: #a98ff3;
+}
+.bg-psychic {
+	background: #f95587;
+}
+.bg-bug {
+	background: #a6b91a;
+}
+.bg-rock {
+	background: #b6a136;
+}
+.bg-ghost {
+	background: #735797;
+}
+.bg-dragon {
+	background: #6f35fc;
+}
+.bg-dark {
+	background: #705746;
+}
+.bg-steel {
+	background: #b7b7ce;
+}
+.bg-fairy {
+	background: #d685ad;
 }
 
-a {
-  color: inherit;
-  text-decoration: none;
+
+.selector-anim {
+	width: 120vw;
+	background: repeating-linear-gradient(120deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.1) 40px, rgba(255, 255, 255, 0.2) 0, rgba(255, 255, 255, 0.2) 80px);
+	animation: pb-bg 75s ease-in-out infinite;
 }
 
-* {
-  box-sizing: border-box;
+.picks-anim {
+	width: 100vw;
+	background: repeating-linear-gradient(60deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.1) 40px, rgba(255, 255, 255, 0.2) 0, rgba(255, 255, 255, 0.2) 80px);
+	animation: pb-bg 75s ease-in-out infinite;
 }
 
-@media (prefers-color-scheme: dark) {
-  html {
-    color-scheme: dark;
-  }
-  body {
-    color: white;
-    background: black;
-  }
+@keyframes pb-bg {
+	0% {
+		transform: translateX(-20vw); 
+	}
+	50% {
+		transform: translateX(0vw);
+	}
+	100% {
+		transform: translateX(-20vw);
+	}
 }
