@@ -23,6 +23,7 @@ export async function getPokemonDataByNames(names: string[]): Promise<SpeciesMod
             return await api.getPokemonSpeciesByName(name)
                 .then((data) => data)
                 .catch((error) => {
+                    console.log(`failed to fetch ${name}`)
                     console.error(error)
                     return null
                 })

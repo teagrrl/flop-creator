@@ -13,7 +13,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
 			const reqNames: string[] | string | undefined = req.query.names
 			const names = typeof reqNames === "string" ? reqNames.split(",") : reqNames ?? []
 			if(names.length) {
-				const results = await getPokemonDataByNames(names)
+				const uniqueNames = new Set(names)
+				const results = await getPokemonDataByNames(Array.from(uniqueNames))
 				const sorted = Array.from(results).sort(SpeciesComparator())
 				res.status(200).json({ pokemon: sorted })
 			} else {

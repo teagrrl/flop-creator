@@ -121,10 +121,10 @@ export default function PokemonDetails({ model, banColor, player1, player2, onBa
                 </div>
             </div>
             <div className="grid grid-cols-2 gap-1">
-                <button className="px-2 py-1 bg-gray-400 rounded-md hover:font-bold" style={{ backgroundColor: banColor }} onClick={handleBan}>Ban</button>
-                <button className="px-2 py-1 bg-red-600 rounded-md hover:font-bold" onClick={handleUnpick}>Reset Pick</button>
-                <button className="px-2 py-1 bg-gray-400 rounded-md hover:font-bold" style={{ backgroundColor: player1.color }} onClick={handleP1Pick}>{player1.name}&apos;s Pick</button>
-                <button className="px-2 py-1 bg-gray-400 rounded-md hover:font-bold" style={{ backgroundColor: player2.color }} onClick={handleP2Pick}>{player2.name}&apos;s Pick</button>
+                <button className="px-2 py-1 bg-gray-500 rounded-md hover:font-bold" style={{ backgroundColor: banColor }} onClick={handleBan}>Ban</button>
+                <button className="px-2 py-1 bg-gray-500 rounded-md hover:font-bold" onClick={handleUnpick}>Reset Pick</button>
+                <button className="px-2 py-1 bg-gray-500 rounded-md hover:font-bold" style={{ backgroundColor: player1.color }} onClick={handleP1Pick}>{player1.name}&apos;s Pick</button>
+                <button className="px-2 py-1 bg-gray-500 rounded-md hover:font-bold" style={{ backgroundColor: player2.color }} onClick={handleP2Pick}>{player2.name}&apos;s Pick</button>
             </div>
         </div>
     )

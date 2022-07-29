@@ -6,15 +6,11 @@ export class SpeciesModel {
     public readonly canGigantamax: boolean
     public readonly data: PokemonModel[]
 
-    public readonly raw: PokemonSpecies
-
     constructor(data: PokemonSpecies, varietyData: Pokemon[]) {
         this.name = data.name
         this.canMegaEvolve = data.varieties.filter((variety) => variety.pokemon.name.endsWith("-mega")).length > 0
         this.canGigantamax = data.varieties.filter((variety) => variety.pokemon.name.endsWith("-gmax")).length > 0
         this.data = varietyData.map((variety) => new PokemonModel(variety))
-
-        this.raw = data
     }
 }
 
@@ -31,8 +27,6 @@ export class PokemonModel {
     public readonly sprite: string | null
     public readonly moves: string[]
 
-    public readonly raw: Pokemon
-
     constructor(data: Pokemon) {
         this.name = data.name
         this.types = data.types.map((type) => type.type.name)
@@ -45,8 +39,6 @@ export class PokemonModel {
         this.artwork = data.sprites.other["official-artwork"].front_default
         this.sprite = data.sprites.front_default
         this.moves = data.moves.map((move) => move.move.name).sort()
-
-        this.raw = data
     }
 }
 
