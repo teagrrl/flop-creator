@@ -5,15 +5,10 @@ import { PokemonModel, SpeciesModel } from "@data/pokemon"
 import PokemonCard from "@components/pokemoncard"
 import PickedPokemon from "@components/pickedpokemon"
 import PokemonDetails from "@components/pokemondetails"
-import { PlayerData } from "@components/settings"
+import { SettingsData } from "@components/settings"
 
 type PickBanProps = {
-    names: string[],
-    bans: number,
-    picks: number,
-    banColor: string,
-    player1: PlayerData,
-    player2: PlayerData,
+    settings: SettingsData,
 }
 
 const apiFetcher = (url: string) => fetch(url)
@@ -27,8 +22,8 @@ const apiFetcher = (url: string) => fetch(url)
     })
     .catch((error) => error)
 
-export default function PickBan({ names, bans, picks, banColor, player1, player2 }: PickBanProps) {
-    const response = useSWR<LookupApiResponse>(`/api/lookup?names=${names.join(",")}`, apiFetcher)
+export default function PickBan({ settings }: PickBanProps) {
+    const response = useSWR<LookupApiResponse>(`/api/lookup?names=${settings.names.join(",")}`, apiFetcher)
 
     const [variantIndex, setVariantIndex] = useState<number>(0)
     const [selectedPokemon, setSelectedPokemon] = useState<PokemonModel | null>(null)
@@ -54,7 +49,7 @@ export default function PickBan({ names, bans, picks, banColor, player1, player2
     }
 
     function handleBan(name: string) {
-        if(bannedPicks.length >= bans * 2) {
+        if(bannedPicks.length >= settings.bans * 2) {
             alert("You've banned enough Pokemon!")
             return
         }
@@ -73,8 +68,8 @@ export default function PickBan({ names, bans, picks, banColor, player1, player2
     }
 
     function handleP1Pick(name: string) {
-        if(p1Picks.length >= picks) {
-            alert(`${player1.name} has picked enough Pokemon!`)
+        if(p1Picks.length >= settings.picks) {
+            alert(`${settings.player1.name} has picked enough Pokemon!`)
             return
         }
         const model = getSpeciesModelByName(name)
@@ -92,8 +87,8 @@ export default function PickBan({ names, bans, picks, banColor, player1, player2
     }
 
     function handleP2Pick(name: string) {
-        if(p2Picks.length >= picks) {
-            alert(`${player2.name} has picked enough Pokemon!`)
+        if(p2Picks.length >= settings.picks) {
+            alert(`${settings.player2.name} has picked enough Pokemon!`)
             return
         }
         const model = getSpeciesModelByName(name)
@@ -134,7 +129,7 @@ export default function PickBan({ names, bans, picks, banColor, player1, player2
                         <div className="absolute h-full selector-anim"></div>
                         <div className="h-full flex flex-row flex-wrap flex-grow gap-2 p-2 overflow-hidden">
                             {models.map((model) => 
-                                <PokemonCard key={model.name} name={model.name} model={model.data[variantIndex % model.data.length]} bgOverride={bannedPicks.includes(model.name) ?  banColor : p1Picks.includes(model.name) ? player1.color : p2Picks.includes(model.name) ? player2.color : undefined} onClick={() => viewPokemonDetails(model.data[variantIndex % model.data.length])} />
+                                <PokemonCard key={model.name} name={model.name} model={model.data[variantIndex % model.data.length]} bgOverride={bannedPicks.includes(model.name) ?  settings.banColor : p1Picks.includes(model.name) ? settings.player1.color : p2Picks.includes(model.name) ? settings.player2.color : undefined} onClick={() => viewPokemonDetails(model.data[variantIndex % model.data.length])} />
                             )}
                         </div>
                     </div>
@@ -143,25 +138,25 @@ export default function PickBan({ names, bans, picks, banColor, player1, player2
                             <div className="w-full relative overflow-hidden">
                                 <div className="absolute h-full picks-anim"></div>
                                 <div className="flex flex-row flex-wrap items-center overflow-hidden">
-                                    <div className="px-2 font-bold">{player1.name}</div>
+                                    <div className="px-2 font-bold">{settings.player1.name}</div>
                                     {p1PickModels.map((model) => 
-                                        <PickedPokemon key={model.name} model={model.data[variantIndex % model.data.length]} color={player1.color} />
+                                        <PickedPokemon key={model.name} model={model.data[variantIndex % model.data.length]} color={settings.player1.color} />
                                     )}
-                                    {Array.from(Array(picks - p1PickModels.length)).map((und, index) =>
+                                    {Array.from(Array(settings.picks - p1PickModels.length)).map((und, index) =>
                                         <PickedPokemon key={`p1_${index}`} color={"#333333"} />
                                     )}
                                 </div>
                                 <div className="flex flex-row flex-wrap items-center overflow-hidden">
-                                    <div className="px-2 font-bold">{player2.name}</div>
+                                    <div className="px-2 font-bold">{settings.player2.name}</div>
                                     {p2PickModels.map((model) => 
-                                        <PickedPokemon key={model.name} model={model.data[variantIndex % model.data.length]} color={player2.color} />
+                                        <PickedPokemon key={model.name} model={model.data[variantIndex % model.data.length]} color={settings.player2.color} />
                                     )}
-                                    {Array.from(Array(picks - p2PickModels.length)).map((und, index) =>
+                                    {Array.from(Array(settings.picks - p2PickModels.length)).map((und, index) =>
                                         <PickedPokemon key={`p2_${index}`} color={"#333333"} />
                                     )}
                                 </div>
                             </div>
-                            {selectedPokemon && <PokemonDetails model={selectedPokemon} banColor={banColor} player1={player1} player2={player2} onBan={handleBan} onP1Pick={handleP1Pick} onP2Pick={handleP2Pick} onUnpick={handleUnpick} />}
+                            {selectedPokemon && <PokemonDetails model={selectedPokemon} banColor={settings.banColor} player1={settings.player1} player2={settings.player2} onBan={handleBan} onP1Pick={handleP1Pick} onP2Pick={handleP2Pick} onUnpick={handleUnpick} />}
                         </div>
                     </div>
                 </div>

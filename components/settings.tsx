@@ -1,9 +1,7 @@
-import React, { useState } from "react"
+import React, { useEffect, useState } from "react"
 
 type SettingsProps = {
-    defaultNames?: string,
-    defaultBans?: number,
-    defaultPicks?: number,
+    savedSettings: SettingsData
     onChangeSettings?: Function,
 }
 
@@ -21,32 +19,41 @@ export type SettingsData = {
     player2: PlayerData,
 }
 
-export default function Settings({ defaultNames, defaultBans, defaultPicks, onChangeSettings }: SettingsProps) {
-    const [pokemonNames, setPokemonNames] = useState<string>(defaultNames ?? "")
-    const [numBans, setNumBans] = useState<number>(defaultBans ?? 3)
-    const [numPicks, setNumPicks] = useState<number>(defaultPicks ?? 9)
-    const [p1Data, setP1Data] = useState<PlayerData>({ name: "Adam", color: "#9d67ad" })
-    const [p2Data, setP2Data] = useState<PlayerData>({ name: "Val", color: "#85ab6c" })
-    const [banColor, setBanColor] = useState<string>("#9f0b29")
+export default function Settings({ savedSettings, onChangeSettings }: SettingsProps) {
+    const [pokemonNames, setPokemonNames] = useState<string>(savedSettings.names.join("\r\n"))
+    const [numBans, setNumBans] = useState<number>(savedSettings.bans ?? 3)
+    const [numPicks, setNumPicks] = useState<number>(savedSettings.picks ?? 9)
+    const [p1Data, setP1Data] = useState<PlayerData>(savedSettings.player1)
+    const [p2Data, setP2Data] = useState<PlayerData>(savedSettings.player2)
+    const [banColor, setBanColor] = useState<string>(savedSettings.banColor)
+
+    useEffect(() => {
+        if(onChangeSettings) {
+            onChangeSettings({
+                names: pokemonNames.split(/\r?\n/).map((name) => name.toLowerCase().trim()), 
+                bans: numBans, 
+                picks: numPicks,
+                banColor: banColor,
+                player1: p1Data,
+                player2: p2Data,
+            })
+        }
+    }, [onChangeSettings, pokemonNames, numBans, numPicks, p1Data, p2Data, banColor])
 
     function onPastePokemonNames(event: React.ClipboardEvent<HTMLTextAreaElement>) {
         setPokemonNames(event.clipboardData.getData("text"))
-        updateSettings()
     }
 
     function onChangePokemonNames(event: React.ChangeEvent<HTMLTextAreaElement>) {
         setPokemonNames(event.target.value)
-        updateSettings()
     }
 
     function onChangeNumBans(event: React.ChangeEvent<HTMLInputElement>) {
         setNumBans(parseInt(event.target.value))
-        updateSettings()
     }
 
     function onChangeNumPicks(event: React.ChangeEvent<HTMLInputElement>) {
         setNumPicks(parseInt(event.target.value))
-        updateSettings()
     }
 
     function onChangeP1Name(event: React.ChangeEvent<HTMLInputElement>) {
