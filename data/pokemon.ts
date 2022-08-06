@@ -7,7 +7,7 @@ export class SpeciesModel {
     public readonly data: PokemonModel[]
 
     constructor(data: PokemonSpecies, varietyData: Pokemon[]) {
-        this.name = data.name
+        this.name = data.names.find((name) => name.language.name === "en")?.name ?? data.name
         this.canMegaEvolve = data.varieties.filter((variety) => variety.pokemon.name.endsWith("-mega")).length > 0
         this.canGigantamax = data.varieties.filter((variety) => variety.pokemon.name.endsWith("-gmax")).length > 0
         this.data = varietyData.map((variety) => new PokemonModel(variety))

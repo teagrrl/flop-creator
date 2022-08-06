@@ -23,7 +23,7 @@ const apiFetcher = (url: string) => fetch(url)
     .catch((error) => error)
 
 export default function PickBan({ settings }: PickBanProps) {
-    const response = useSWR<LookupApiResponse>(`/api/lookup?names=${settings.names.join(",")}`, apiFetcher)
+    const response = useSWR<LookupApiResponse>(`/api/lookup?names=${getLookupNames(settings.names)}`, apiFetcher)
 
     const [variantIndex, setVariantIndex] = useState<number>(0)
     const [selectedPokemon, setSelectedPokemon] = useState<PokemonModel | null>(null)
@@ -182,4 +182,12 @@ function useInterval(callback: Function, timeout?: number | null) {
 	}, [timeout]);
 
 	return timeoutRef;
+}
+
+function getLookupNames(names: string[]) {
+    return names.map((name) => 
+        name.trim()
+            .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+            .replace(/[^\w\d\s-]+/g, "").replace(/\s+/g, "-")
+    ).join(",")
 }
