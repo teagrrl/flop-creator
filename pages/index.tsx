@@ -15,7 +15,9 @@ const defaultSettings: SettingsData = {
 	player2: { 
 		name: "Player 2", 
 		color: "#85ab6c" 
-	}
+	},
+	showMega: false,
+	showGmax: false,
 }
 
 export default function IndexPage() {

@@ -4,8 +4,19 @@ import { PokemonModel } from "@data/pokemon";
 import { properName } from "@helpers/utilities";
 import { PlayerData } from "@components/settings";
 
+type PokemonStats = {
+    hp: number,
+    attack: number,
+    specialAttack: number,
+    defense: number,
+    specialDefense: number,
+    speed: number,
+    total: number,
+}
+
 type PokemonDetailsProps = {
     model: PokemonModel,
+    max?: PokemonStats,
     banColor: string,
     player1: PlayerData,
     player2: PlayerData,
@@ -17,7 +28,7 @@ type PokemonDetailsProps = {
 
 type DetailTab = "stats" | "moves"
 
-export default function PokemonDetails({ model, banColor, player1, player2, onBan, onP1Pick, onP2Pick, onUnpick }: PokemonDetailsProps) {
+export default function PokemonDetails({ model, max, banColor, player1, player2, onBan, onP1Pick, onP2Pick, onUnpick }: PokemonDetailsProps) {
     const [visibleTab, setVisibleTab] = useState<DetailTab>("stats")
 
     function handleBan() {
@@ -71,35 +82,13 @@ export default function PokemonDetails({ model, banColor, player1, player2, onBa
                 <div className="max-h-[35vh] overflow-x-hidden overflow-y-auto">
                     {visibleTab === "stats" && <div className="flex flex-col gap-2">
                         <div className="flex flex-col gap-0.5">
-                            <div className="flex flex-row gap-2">
-                                <span className="flex-grow font-semibold">Base Stat Total</span>
-                                <span>{model.baseStatTotal}</span>
-                            </div>
-                            <hr />
-                            <div className="flex flex-row gap-2">
-                                <span className="flex-grow font-semibold">HP</span>
-                                <span>{model.stats.hp}</span>
-                            </div>
-                            <div className="flex flex-row gap-2">
-                                <span className="flex-grow font-semibold">Attack</span>
-                                <span>{model.stats.attack}</span>
-                            </div>
-                            <div className="flex flex-row gap-2">
-                                <span className="flex-grow font-semibold">Defense</span>
-                                <span >{model.stats.defense}</span>
-                            </div>
-                            <div className="flex flex-row gap-2">
-                                <span className="flex-grow font-semibold">Special Attack</span>
-                                <span>{model.stats.specialAttack}</span>
-                            </div>
-                            <div className="flex flex-row gap-2">
-                                <span className="flex-grow font-semibold">Special Defense</span>
-                                <span>{model.stats.specialDefense}</span>
-                            </div>
-                            <div className="flex flex-row gap-2">
-                                <span className="flex-grow font-semibold">Speed</span>
-                                <span>{model.stats.speed}</span>
-                            </div>
+                            <StatRow label={"Base Stat Total"} current={model.baseStatTotal} max={max?.total} />
+                            <StatRow label={"HP"} current={model.stats.hp} max={max?.hp} />
+                            <StatRow label={"Attack"} current={model.stats.attack} max={max?.attack} />
+                            <StatRow label={"Special Attack"} current={model.stats.specialAttack} max={max?.specialAttack} />
+                            <StatRow label={"Defense"} current={model.stats.defense} max={max?.defense} />
+                            <StatRow label={"Special Defense"} current={model.stats.specialDefense} max={max?.specialDefense} />
+                            <StatRow label={"Speed"} current={model.stats.speed} max={max?.speed} />
                         </div>
                         <div className="flex flex-row flex-wrap justify-center items-center gap-1 text-sm">
                             <div className="mr-2">{model.abilities.length > 1 ? "Abilities" : "Ability"}</div>
@@ -125,6 +114,39 @@ export default function PokemonDetails({ model, banColor, player1, player2, onBa
                 <button className="px-2 py-1 bg-gray-500 rounded-md hover:font-bold" onClick={handleUnpick}>Reset Pick</button>
                 <button className="px-2 py-1 bg-gray-500 rounded-md hover:font-bold" style={{ backgroundColor: player1.color }} onClick={handleP1Pick}>{player1.name}&apos;s Pick</button>
                 <button className="px-2 py-1 bg-gray-500 rounded-md hover:font-bold" style={{ backgroundColor: player2.color }} onClick={handleP2Pick}>{player2.name}&apos;s Pick</button>
+            </div>
+        </div>
+    )
+}
+
+type StatRowProps = {
+    label: string,
+    current: number,
+    max?: number,
+}
+
+function StatRow({ label, current, max }: StatRowProps) {
+    const colorClass = max 
+        ? current / max > 0.9 
+            ? "bg-emerald-700" 
+            : current / max > 0.7 
+                ? "bg-lime-700" 
+                : current / max > 0.5 
+                    ? "bg-yellow-700" 
+                    : current / max > 0.3 
+                        ? "bg-amber-700" 
+                        : current / max > 0.1 
+                            ? "bg-orange-700" 
+                            : "bg-red-700" 
+        : "bg-neutral-600"
+    return (
+        <div className="flex flex-row gap-2">
+            <span className="flex-grow font-semibold">{label}</span>
+            <div className="relative w-28 text-right">
+                <span className="relative z-10">{current}</span>
+                {max && <div className="absolute right-0 bottom-0 w-full flex justify-end h-2 bg-neutral-700">
+                    <div className={colorClass} style={{ width: `${current / max * 7}rem` }}></div>
+                </div>}
             </div>
         </div>
     )

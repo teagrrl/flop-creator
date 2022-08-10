@@ -36,6 +36,17 @@ export default function PickBan({ settings }: PickBanProps) {
     const p1PickModels = p1Picks.map((pick) => models.find((model) => model.name === pick)).filter(undefinedFilter)
     const p2PickModels = p2Picks.map((pick) => models.find((model) => model.name === pick)).filter(undefinedFilter)
 
+    const maxStats = models.map((model) => model.data).flat().reduce((max, model) => {
+        max.hp = Math.max(max.hp, model.stats.hp)
+        max.attack = Math.max(max.attack, model.stats.attack)
+        max.specialAttack = Math.max(max.specialAttack, model.stats.specialAttack)
+        max.defense = Math.max(max.defense, model.stats.defense)
+        max.specialDefense = Math.max(max.specialDefense, model.stats.specialDefense)
+        max.speed = Math.max(max.speed, model.stats.speed)
+        max.total = Math.max(max.total, model.baseStatTotal)
+        return max
+    }, { hp: 0, attack: 0, specialAttack: 0, defense: 0, specialDefense: 0, speed: 0, total: 0, })
+
 	useInterval(() => {
         setVariantIndex(variantIndex + 1)
 	}, 15000)
@@ -129,7 +140,7 @@ export default function PickBan({ settings }: PickBanProps) {
                         <div className="absolute h-full selector-anim"></div>
                         <div className="h-full flex flex-row flex-wrap flex-grow gap-2 p-2 overflow-hidden">
                             {models.map((model) => 
-                                <PokemonCard key={model.name} name={model.name} model={model.data[variantIndex % model.data.length]} bgOverride={bannedPicks.includes(model.name) ?  settings.banColor : p1Picks.includes(model.name) ? settings.player1.color : p2Picks.includes(model.name) ? settings.player2.color : undefined} onClick={() => viewPokemonDetails(model.data[variantIndex % model.data.length])} />
+                                <PokemonCard key={model.name} name={model.name} model={filteredPokemonForms(model, variantIndex, settings.showMega, settings.showGmax)} bgOverride={bannedPicks.includes(model.name) ?  settings.banColor : p1Picks.includes(model.name) ? settings.player1.color : p2Picks.includes(model.name) ? settings.player2.color : undefined} onClick={() => viewPokemonDetails(filteredPokemonForms(model, variantIndex, settings.showMega, settings.showGmax))} />
                             )}
                         </div>
                     </div>
@@ -156,7 +167,7 @@ export default function PickBan({ settings }: PickBanProps) {
                                     )}
                                 </div>
                             </div>
-                            {selectedPokemon && <PokemonDetails model={selectedPokemon} banColor={settings.banColor} player1={settings.player1} player2={settings.player2} onBan={handleBan} onP1Pick={handleP1Pick} onP2Pick={handleP2Pick} onUnpick={handleUnpick} />}
+                            {selectedPokemon && <PokemonDetails model={selectedPokemon} max={maxStats} banColor={settings.banColor} player1={settings.player1} player2={settings.player2} onBan={handleBan} onP1Pick={handleP1Pick} onP2Pick={handleP2Pick} onUnpick={handleUnpick} />}
                         </div>
                     </div>
                 </div>
@@ -190,4 +201,14 @@ function getLookupNames(names: string[]) {
             .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
             .replace(/[^\w\d\s-]+/g, "").replace(/\s+/g, "-")
     ).join(",")
+}
+
+function filteredPokemonForms(model: SpeciesModel, index: number, showMega?: boolean, showGmax?: boolean) {
+    const forms = model.data.filter((form) => 
+        true 
+        && !(form.name.endsWith("-totem") || form.name.includes("-totem-")) // ignore totem pokemon 
+        && !(!showMega && form.name.endsWith("-mega")) // ignore mega-evolution with flag
+        && !(!showGmax && form.name.endsWith("-gmax")) // ignore gigantamax with flag
+    )
+    return forms[index % forms.length]
 }
