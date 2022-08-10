@@ -31,6 +31,8 @@ export default function PickBan({ settings }: PickBanProps) {
     const [p1Picks, setP1Picks] = useState<string[]>([])
     const [p2Picks, setP2Picks] = useState<string[]>([])
 
+    const error = response.data?.error
+    console.log(error)
     const models = response.data?.pokemon ?? []
     const undefinedFilter = (model: SpeciesModel | undefined): model is SpeciesModel => model !== undefined
     const p1PickModels = p1Picks.map((pick) => models.find((model) => model.name === pick)).filter(undefinedFilter)

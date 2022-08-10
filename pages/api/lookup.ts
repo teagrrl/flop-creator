@@ -14,9 +14,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
 			const names = typeof reqNames === "string" ? reqNames.split(",") : reqNames ?? []
 			if(names.length) {
 				const uniqueNames = new Set(names)
-				const results = await getPokemonDataByNames(Array.from(uniqueNames))
+				const resultsMap = await getPokemonDataByNames(Array.from(uniqueNames))
+				const results: SpeciesModel[] = []
+				const notFound: string[] = []
+				Object.keys(resultsMap).map((name) => {
+					const result = resultsMap[name]
+					if(result) {
+						results.push(result)
+					} else {
+						notFound.push(name)
+					}
+				})
 				const sorted = Array.from(results).sort(SpeciesComparator())
-				res.status(200).json({ pokemon: sorted })
+				res.status(200).json({ pokemon: sorted, error: notFound.length ? `Could not find: ${notFound.join(", ")}` : undefined })
 			} else {
 				res.status(400).json({ error: "Pokemon names are required", })
 			}

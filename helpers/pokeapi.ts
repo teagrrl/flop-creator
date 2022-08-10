@@ -17,21 +17,26 @@ export async function lookupPokemonByName(names: string[]) {
     return pokemonOrNull.filter((data: Pokemon | null): data is Pokemon => data !== null)
 }
 
-export async function getPokemonDataByNames(names: string[]): Promise<SpeciesModel[]> {
-    const speciesOrNull = await Promise.all(
+export async function getPokemonDataByNames(names: string[]): Promise<Record<string, SpeciesModel | null>> {
+    const speciesOrNullMap: Record<string, PokemonSpecies | null> = Object.fromEntries(await Promise.all(
         names.map(async (name) => {
-            return await api.getPokemonSpeciesByName(name)
+            return [name, await api.getPokemonSpeciesByName(name.toLowerCase().trim())
                 .then((data) => data)
                 .catch((error) => {
                     console.log(`failed to fetch ${name}`)
                     console.error(error)
                     return null
-                })
+                })]
         })
-    )
-    const foundSpecies = speciesOrNull.filter((data: PokemonSpecies | null): data is PokemonSpecies => data !== null)
-    const nameVarietiesMap: Record<string, Pokemon[]> = Object.fromEntries(await Promise.all(
-        foundSpecies.map(async (species) => [species.name, await lookupPokemonByName(species.varieties.map((variety) => variety.pokemon.name))])
     ))
-    return foundSpecies.map((species) => new SpeciesModel(species, nameVarietiesMap[species.name] ?? [])).filter((model) => model.data.length > 0)
+    const nameVarietiesMap: Record<string, Pokemon[]> = Object.fromEntries(await Promise.all(
+        Object.keys(speciesOrNullMap).map(async (name) => {
+            const speciesOrNull = speciesOrNullMap[name]
+            return [name, speciesOrNull ? await lookupPokemonByName(speciesOrNull.varieties.map((variety) => variety.pokemon.name)) : null]
+        })
+    ))
+    return Object.fromEntries(Object.keys(speciesOrNullMap).map((name) => {
+        const speciesOrNull = speciesOrNullMap[name]
+        return [name, speciesOrNull ? new SpeciesModel(speciesOrNull, nameVarietiesMap[name] ?? []) : null]
+    }))
 }

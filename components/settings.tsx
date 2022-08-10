@@ -34,7 +34,7 @@ export default function Settings({ savedSettings, onChangeSettings }: SettingsPr
     useEffect(() => {
         if(onChangeSettings) {
             onChangeSettings({
-                names: pokemonNames.split(/\r?\n/).map((name) => name.toLowerCase().trim()), 
+                names: pokemonNames.split(/\r?\n/).map((name) => name.trim()).filter((name) => name.length > 0), 
                 bans: numBans, 
                 picks: numPicks,
                 banColor: banColor,
