@@ -3,6 +3,7 @@ import Image from "next/image"
 import { PokemonModel } from "@data/pokemon";
 import { properName } from "@helpers/utilities";
 import { PlayerData } from "@components/settings";
+import { PokemonPoolStats } from "@components/pickban";
 
 type PokemonStats = {
     hp: number,
@@ -14,33 +15,21 @@ type PokemonStats = {
     total: number,
 }
 
-type PokemonPoolStats = {
-    hp: number[],
-    attack: number[],
-    defense: number[],
-    specialAttack: number[],
-    specialDefense: number[],
-    speed: number[],
-    total: number[],
-}
-
 type PokemonDetailsProps = {
     model: PokemonModel,
     min?: PokemonStats,
     max?: PokemonStats,
     stats?: PokemonPoolStats,
     banColor: string,
-    player1: PlayerData,
-    player2: PlayerData,
+    players: PlayerData[],
     onBan?: Function,
-    onP1Pick?: Function,
-    onP2Pick?: Function,
+    onPlayerPick?: Function,
     onUnpick?: Function,
 }
 
 type DetailTab = "stats" | "moves"
 
-export default function PokemonDetails({ model, min, max, stats, banColor, player1, player2, onBan, onP1Pick, onP2Pick, onUnpick }: PokemonDetailsProps) {
+export default function PokemonDetails({ model, min, max, stats, banColor, players, onBan, onPlayerPick, onUnpick }: PokemonDetailsProps) {
     const [visibleTab, setVisibleTab] = useState<DetailTab>("stats")
 
     function handleBan() {
@@ -49,15 +38,9 @@ export default function PokemonDetails({ model, min, max, stats, banColor, playe
         }
     }
 
-    function handleP1Pick() {
-        if(onP1Pick) {
-            onP1Pick(model.name)
-        }
-    }
-
-    function handleP2Pick() {
-        if(onP2Pick) {
-            onP2Pick(model.name)
+    function handlePlayerPick(index: number) {
+        if(onPlayerPick) {
+            onPlayerPick(model.name, index)
         }
     }
 
@@ -125,10 +108,11 @@ export default function PokemonDetails({ model, min, max, stats, banColor, playe
                 </div>
             </div>
             <div className="grid grid-cols-2 gap-1">
-                <button className="px-2 py-1 bg-gray-500 rounded-md hover:font-bold" style={{ backgroundColor: banColor }} onClick={handleBan}>Ban</button>
-                <button className="px-2 py-1 bg-gray-500 rounded-md hover:font-bold" onClick={handleUnpick}>Reset Pick</button>
-                <button className="px-2 py-1 bg-gray-500 rounded-md hover:font-bold" style={{ backgroundColor: player1.color }} onClick={handleP1Pick}>{player1.name}&apos;s Pick</button>
-                <button className="px-2 py-1 bg-gray-500 rounded-md hover:font-bold" style={{ backgroundColor: player2.color }} onClick={handleP2Pick}>{player2.name}&apos;s Pick</button>
+                <button className="px-2 py-1 bg-gray-500 rounded-md hover:grayscale-[0.5] hover:brightness-125" style={{ backgroundColor: banColor }} onClick={handleBan}>Ban</button>
+                <button className="px-2 py-1 bg-gray-500 rounded-md hover:grayscale-[0.5] hover:brightness-125" onClick={handleUnpick}>Reset Pick</button>
+                {players.map((player, index) =>
+                    <button key={`player_${index}`} className="px-2 py-1 bg-gray-500 rounded-md hover:grayscale-[0.5] hover:brightness-125" style={{ backgroundColor: player.color }} onClick={() => handlePlayerPick(index)}>{player.name}&apos;s Pick</button>
+                )}
             </div>
         </div>
     )

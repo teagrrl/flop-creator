@@ -8,16 +8,27 @@ const defaultSettings: SettingsData = {
 	bans: 3, 
 	picks: 9, 
 	banColor: "#9f0b29", 
-	player1: { 
-		name: "Player 1", 
-		color: "#9d67ad" 
-	}, 
-	player2: { 
-		name: "Player 2", 
-		color: "#85ab6c" 
-	},
+	players: [
+		{ 
+			name: "Player 1", 
+			color: "#9d67ad", 
+		},
+		{ 
+			name: "Player 2", 
+			color: "#85ab6c", 
+		},
+		/*{ 
+			name: "Player 3", 
+			color: "#336699", 
+		},
+		{ 
+			name: "Player 4", 
+			color: "#b00b69", 
+		},*/
+	],
 	showMega: false,
 	showGmax: false,
+	allowRandom: true,
 }
 
 export default function IndexPage() {
@@ -35,7 +46,7 @@ export default function IndexPage() {
 	}
 
 	function openPickBan() {
-		if(settingsData.names.length < (settingsData.bans + settingsData.picks) * 2) {
+		if(settingsData.names.length < (settingsData.bans + settingsData.picks) * settingsData.players.length) {
 			alert("You have fewer Pokemon than you've elected to ban and draft!")
 		} else {
 			setIsSettingsExpanded(false)
@@ -48,7 +59,7 @@ export default function IndexPage() {
 			<Head>
 				<title>FLOP</title>
 			</Head>
-			<div className={`flex flex-col ${isSettingsExpanded ? "flex-grow" : ""}`}>
+			<div className={`flex flex-col ${isSettingsExpanded ? "flex-grow" : ""} overflow-hidden`}>
 				<button className="w-full px-4 py-2 text-lg font-semibold bg-gray-900 hover:bg-gray-600" onClick={openSettings}>Settings</button>
 				{isSettingsExpanded && <Settings savedSettings={settingsData} onChangeSettings={updateSettings} />}
 			</div>
