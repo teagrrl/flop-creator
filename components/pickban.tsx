@@ -1,26 +1,16 @@
 import React, { useEffect, useRef, useState } from "react"
 import useSWR from "swr"
 import { LookupApiResponse } from "@api/lookup"
-import { PokemonModel, SpeciesModel } from "@data/pokemon"
+import { FormFilter, PokemonModel, SpeciesModel } from "@data/pokemon"
 import PokemonCard from "@components/pokemoncard"
 import PickedPokemon from "@components/pickedpokemon"
 import PokemonDetails from "@components/pokemondetails"
 import { SettingsData } from "@components/settings"
+import { apiFetcher, UndefinedFilter } from "@helpers/utilities"
 
 type PickBanProps = {
     settings: SettingsData,
 }
-
-const apiFetcher = (url: string) => fetch(url)
-    .then(async (response) => {
-        const data = await response.json()
-        if(!response.ok) {
-            const error = data.error ?? response.status
-            return Promise.reject(error)
-        }
-        return data
-    })
-    .catch((error) => error)
 
 export default function PickBan({ settings }: PickBanProps) {
     const response = useSWR<LookupApiResponse>(`/api/lookup?names=${getLookupNames(settings.names)}`, apiFetcher)
@@ -30,24 +20,14 @@ export default function PickBan({ settings }: PickBanProps) {
     const [bannedPicks, setBannedPicks] = useState<string[]>([])
     const [p1Picks, setP1Picks] = useState<string[]>([])
     const [p2Picks, setP2Picks] = useState<string[]>([])
+    const [showError, setShowError] = useState<boolean>(true)
 
     const error = response.data?.error
-    console.log(error)
     const models = response.data?.pokemon ?? []
-    const undefinedFilter = (model: SpeciesModel | undefined): model is SpeciesModel => model !== undefined
-    const p1PickModels = p1Picks.map((pick) => models.find((model) => model.name === pick)).filter(undefinedFilter)
-    const p2PickModels = p2Picks.map((pick) => models.find((model) => model.name === pick)).filter(undefinedFilter)
+    const p1PickModels = p1Picks.map((pick) => models.find((model) => model.name === pick)).filter(UndefinedFilter<SpeciesModel>())
+    const p2PickModels = p2Picks.map((pick) => models.find((model) => model.name === pick)).filter(UndefinedFilter<SpeciesModel>())
 
-    const maxStats = models.map((model) => model.data).flat().reduce((max, model) => {
-        max.hp = Math.max(max.hp, model.stats.hp)
-        max.attack = Math.max(max.attack, model.stats.attack)
-        max.specialAttack = Math.max(max.specialAttack, model.stats.specialAttack)
-        max.defense = Math.max(max.defense, model.stats.defense)
-        max.specialDefense = Math.max(max.specialDefense, model.stats.specialDefense)
-        max.speed = Math.max(max.speed, model.stats.speed)
-        max.total = Math.max(max.total, model.baseStatTotal)
-        return max
-    }, { hp: 0, attack: 0, specialAttack: 0, defense: 0, specialDefense: 0, speed: 0, total: 0, })
+    const poolStats = getPoolStats(models, settings.showMega, settings.showGmax)
 
 	useInterval(() => {
         setVariantIndex(variantIndex + 1)
@@ -148,6 +128,11 @@ export default function PickBan({ settings }: PickBanProps) {
                     </div>
                     <div className="w-80 flex overflow-hidden">
                         <div className="flex flex-col flex-grow">
+                            {error && showError && <div className="flex flex-col gap-1 px-2 py-1 bg-red-800/80">
+                                <h2 className="text-xl font-bold">Issues</h2>
+                                <p className="text-sm">{error}</p>
+                                <button className="font-semibold bg-slate-300/20 hover:bg-slate-300/40" onClick={() => setShowError(false)}>Dismiss</button>
+                            </div>}
                             <div className="w-full relative overflow-hidden">
                                 <div className="absolute h-full picks-anim"></div>
                                 <div className="flex flex-row flex-wrap items-center overflow-hidden">
@@ -169,7 +154,7 @@ export default function PickBan({ settings }: PickBanProps) {
                                     )}
                                 </div>
                             </div>
-                            {selectedPokemon && <PokemonDetails model={selectedPokemon} max={maxStats} banColor={settings.banColor} player1={settings.player1} player2={settings.player2} onBan={handleBan} onP1Pick={handleP1Pick} onP2Pick={handleP2Pick} onUnpick={handleUnpick} />}
+                            {selectedPokemon && <PokemonDetails model={selectedPokemon} stats={poolStats} banColor={settings.banColor} player1={settings.player1} player2={settings.player2} onBan={handleBan} onP1Pick={handleP1Pick} onP2Pick={handleP2Pick} onUnpick={handleUnpick} />}
                         </div>
                     </div>
                 </div>
@@ -205,12 +190,41 @@ function getLookupNames(names: string[]) {
     ).join(",")
 }
 
+function getPoolStats(models: SpeciesModel[], showMega?: boolean, showGmax?: boolean) {
+    const poolSortDesc = (n: number, m: number) => m - n
+    const poolStats = models
+        .map((model) => model.data).flat()
+        .filter(FormFilter(showMega, showGmax))
+        .reduce((stats, model) => {
+            stats.hp.push(model.stats.hp)
+            stats.attack.push(model.stats.attack)
+            stats.defense.push(model.stats.defense)
+            stats.specialAttack.push(model.stats.specialAttack)
+            stats.specialDefense.push(model.stats.specialDefense)
+            stats.speed.push(model.stats.speed)
+            stats.total.push(model.baseStatTotal)
+            return stats
+        }, { 
+            hp: [] as number[], 
+            attack: [] as number[], 
+            defense: [] as number[], 
+            specialAttack: [] as number[], 
+            specialDefense: [] as number[], 
+            speed: [] as number[], 
+            total: [] as number[], 
+        })
+    poolStats.hp.sort(poolSortDesc)
+    poolStats.attack.sort(poolSortDesc)
+    poolStats.defense.sort(poolSortDesc)
+    poolStats.specialAttack.sort(poolSortDesc)
+    poolStats.specialDefense.sort(poolSortDesc)
+    poolStats.speed.sort(poolSortDesc)
+    poolStats.total.sort(poolSortDesc)
+
+    return poolStats
+}
+
 function filteredPokemonForms(model: SpeciesModel, index: number, showMega?: boolean, showGmax?: boolean) {
-    const forms = model.data.filter((form) => 
-        true 
-        && !(form.name.endsWith("-totem") || form.name.includes("-totem-")) // ignore totem pokemon 
-        && !(!showMega && form.name.endsWith("-mega")) // ignore mega-evolution with flag
-        && !(!showGmax && form.name.endsWith("-gmax")) // ignore gigantamax with flag
-    )
+    const forms = model.data.filter(FormFilter(showMega, showGmax))
     return forms[index % forms.length]
 }

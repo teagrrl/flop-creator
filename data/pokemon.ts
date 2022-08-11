@@ -1,5 +1,7 @@
 import { Pokemon, PokemonSpecies, PokemonStat } from "pokenode-ts"
 
+const shinyRate = 1 / 8192
+
 export class SpeciesModel {
     public readonly name: string
     //public readonly canMegaEvolve: boolean
@@ -23,6 +25,7 @@ export class PokemonModel {
     public readonly height: number // in meters
     public readonly weight: number // in kilograms
 
+    public readonly isShiny: boolean
     public readonly artwork: string | null
     public readonly sprite: string | null
     public readonly moves: string[]
@@ -36,8 +39,9 @@ export class PokemonModel {
         this.height = data.height / 10
         this.weight = data.weight / 10
 
+        this.isShiny = Math.random() < shinyRate
         this.artwork = data.sprites.other["official-artwork"].front_default
-        this.sprite = data.sprites.front_default
+        this.sprite = this.isShiny ? data.sprites.front_shiny : data.sprites.front_default
         this.moves = data.moves.map((move) => move.move.name).sort()
     }
 }
@@ -45,22 +49,22 @@ export class PokemonModel {
 export class BaseStatsModel {
     public readonly hp: number
     public readonly attack: number
-    public readonly specialAttack: number
     public readonly defense: number
+    public readonly specialAttack: number
     public readonly specialDefense: number
     public readonly speed: number
 
     constructor(data: PokemonStat[]) {
         this.hp = data.find((stat) => stat.stat.name === "hp")?.base_stat ?? -1
         this.attack = data.find((stat) => stat.stat.name === "attack")?.base_stat ?? -1
-        this.specialAttack = data.find((stat) => stat.stat.name === "special-attack")?.base_stat ?? -1
         this.defense = data.find((stat) => stat.stat.name === "defense")?.base_stat ?? -1
+        this.specialAttack = data.find((stat) => stat.stat.name === "special-attack")?.base_stat ?? -1
         this.specialDefense = data.find((stat) => stat.stat.name === "special-defense")?.base_stat ?? -1
         this.speed = data.find((stat) => stat.stat.name === "speed")?.base_stat ?? -1
     }
 
     total() {
-        return this.hp + this.attack + this.specialAttack + this.defense + this.specialDefense + this.speed
+        return this.hp + this.attack + this.defense + this.specialAttack + this.specialDefense + this.speed
     }
 }
 
@@ -79,4 +83,12 @@ export function SpeciesComparator(direction?: "asc" | "desc") {
         }
         return comparison
     }
+}
+
+export function FormFilter(showMega?: boolean, showGmax?: boolean) {
+    return (model: PokemonModel) => 
+        true 
+        && !(model.name.endsWith("-totem") || model.name.includes("-totem-")) // ignore totem pokemon 
+        && !(!showMega && model.name.endsWith("-mega")) // ignore mega-evolution with flag
+        && !(!showGmax && model.name.endsWith("-gmax")) // ignore gigantamax with flag
 }

@@ -26,7 +26,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
 					}
 				})
 				const sorted = Array.from(results).sort(SpeciesComparator())
-				res.status(200).json({ pokemon: sorted, error: notFound.length ? `Could not find: ${notFound.join(", ")}` : undefined })
+				res.status(200).json({ pokemon: sorted, error: notFound.length ? `Failed to find the following inputs: ${notFound.map((name) => name.toLowerCase().replace(/-+/g, " ")).join(", ")}` : undefined })
 			} else {
 				res.status(400).json({ error: "Pokemon names are required", })
 			}

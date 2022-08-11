@@ -7,16 +7,28 @@ import { PlayerData } from "@components/settings";
 type PokemonStats = {
     hp: number,
     attack: number,
-    specialAttack: number,
     defense: number,
+    specialAttack: number,
     specialDefense: number,
     speed: number,
     total: number,
 }
 
+type PokemonPoolStats = {
+    hp: number[],
+    attack: number[],
+    defense: number[],
+    specialAttack: number[],
+    specialDefense: number[],
+    speed: number[],
+    total: number[],
+}
+
 type PokemonDetailsProps = {
     model: PokemonModel,
+    min?: PokemonStats,
     max?: PokemonStats,
+    stats?: PokemonPoolStats,
     banColor: string,
     player1: PlayerData,
     player2: PlayerData,
@@ -28,7 +40,7 @@ type PokemonDetailsProps = {
 
 type DetailTab = "stats" | "moves"
 
-export default function PokemonDetails({ model, max, banColor, player1, player2, onBan, onP1Pick, onP2Pick, onUnpick }: PokemonDetailsProps) {
+export default function PokemonDetails({ model, min, max, stats, banColor, player1, player2, onBan, onP1Pick, onP2Pick, onUnpick }: PokemonDetailsProps) {
     const [visibleTab, setVisibleTab] = useState<DetailTab>("stats")
 
     function handleBan() {
@@ -58,7 +70,10 @@ export default function PokemonDetails({ model, max, banColor, player1, player2,
     return (
         <div className="flex flex-col flex-grow gap-2 p-2">
             <div className="flex flex-row justify-center items-center gap-2">
-                <Image src={model.sprite ?? "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/0.png"} alt={model.name} layout="intrinsic" width="100%" height="100%" />
+                <div className="relative">
+                    <Image src={model.sprite ?? "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/0.png"} alt={model.name} layout="intrinsic" width="100%" height="100%" />
+                    {model.isShiny && <span className="absolute top-0 left-0">🌟</span>}
+                </div>
                 <div className="flex flex-col gap-1">
                     <h1 className="text-2xl font-bold text-center">{properName(model.name)}</h1>
                     <div className="flex flex-row justify-center items-center gap-1 text-sm">
@@ -82,13 +97,13 @@ export default function PokemonDetails({ model, max, banColor, player1, player2,
                 <div className="max-h-[35vh] overflow-x-hidden overflow-y-auto">
                     {visibleTab === "stats" && <div className="flex flex-col gap-2">
                         <div className="flex flex-col gap-0.5">
-                            <StatRow label={"Base Stat Total"} current={model.baseStatTotal} max={max?.total} />
-                            <StatRow label={"HP"} current={model.stats.hp} max={max?.hp} />
-                            <StatRow label={"Attack"} current={model.stats.attack} max={max?.attack} />
-                            <StatRow label={"Special Attack"} current={model.stats.specialAttack} max={max?.specialAttack} />
-                            <StatRow label={"Defense"} current={model.stats.defense} max={max?.defense} />
-                            <StatRow label={"Special Defense"} current={model.stats.specialDefense} max={max?.specialDefense} />
-                            <StatRow label={"Speed"} current={model.stats.speed} max={max?.speed} />
+                            <StatRow label={"Base Stat Total"} current={model.baseStatTotal} min={min?.total} max={max?.total} stats={stats?.total} />
+                            <StatRow label={"HP"} current={model.stats.hp} min={min?.hp} max={max?.hp} stats={stats?.hp} />
+                            <StatRow label={"Attack"} current={model.stats.attack} min={min?.attack} max={max?.attack} stats={stats?.attack} />
+                            <StatRow label={"Defense"} current={model.stats.defense} min={min?.defense} max={max?.defense} stats={stats?.defense} />
+                            <StatRow label={"Special Attack"} current={model.stats.specialAttack} min={min?.specialAttack} max={max?.specialAttack} stats={stats?.specialAttack} />
+                            <StatRow label={"Special Defense"} current={model.stats.specialDefense} min={min?.specialDefense} max={max?.specialDefense} stats={stats?.specialDefense} />
+                            <StatRow label={"Speed"} current={model.stats.speed} min={min?.speed} max={max?.speed} stats={stats?.speed} />
                         </div>
                         <div className="flex flex-row flex-wrap justify-center items-center gap-1 text-sm">
                             <div className="mr-2">{model.abilities.length > 1 ? "Abilities" : "Ability"}</div>
@@ -122,20 +137,25 @@ export default function PokemonDetails({ model, max, banColor, player1, player2,
 type StatRowProps = {
     label: string,
     current: number,
+    min?: number,
     max?: number,
+    stats?: number[],
 }
 
-function StatRow({ label, current, max }: StatRowProps) {
-    const colorClass = max 
-        ? current / max > 0.9 
+function StatRow({ label, current, min, max, stats }: StatRowProps) {
+    const percentileIndex = stats ? stats.findIndex((val) => val === current) : -1
+    const percentile = stats ? (stats.length - percentileIndex) / stats.length : -1
+    const ratio = percentile > 0 ? percentile : max ? (current - (min ?? 0)) / (max - (min ?? 0)) : undefined
+    const colorClass = ratio !== undefined
+        ? ratio > 0.9 
             ? "bg-emerald-700" 
-            : current / max > 0.7 
+            : ratio > 0.7 
                 ? "bg-lime-700" 
-                : current / max > 0.5 
+                : ratio > 0.5 
                     ? "bg-yellow-700" 
-                    : current / max > 0.3 
+                    : ratio > 0.3 
                         ? "bg-amber-700" 
-                        : current / max > 0.1 
+                        : ratio > 0.1 
                             ? "bg-orange-700" 
                             : "bg-red-700" 
         : "bg-neutral-600"
@@ -144,8 +164,8 @@ function StatRow({ label, current, max }: StatRowProps) {
             <span className="flex-grow font-semibold">{label}</span>
             <div className="relative w-28 text-right">
                 <span className="relative z-10">{current}</span>
-                {max && <div className="absolute right-0 bottom-0 w-full flex justify-end h-2 bg-neutral-700">
-                    <div className={colorClass} style={{ width: `${current / max * 7}rem` }}></div>
+                {(stats || min && max) && <div className="absolute right-0 bottom-0 w-full flex justify-end h-2 bg-neutral-700">
+                    <div className={colorClass} style={{ width: ratio ? `${ratio * 7}rem` : "1px" }}></div>
                 </div>}
             </div>
         </div>
