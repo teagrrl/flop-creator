@@ -5,6 +5,7 @@ import { FormFilter, PokemonModel, SpeciesModel } from "@data/pokemon"
 import PokemonCard from "@components/pokemoncard"
 import PickedPokemon from "@components/pickedpokemon"
 import PokemonDetails from "@components/pokemondetails"
+import PokemonCompare from "@components/pokemoncompare"
 import { PlayerData, SettingsData } from "@components/settings"
 import { apiFetcher, UndefinedFilter } from "@helpers/utilities"
 
@@ -29,14 +30,14 @@ export default function PickBan({ settings }: PickBanProps) {
     const [selectedPokemon, setSelectedPokemon] = useState<PokemonModel | null>(null)
     const [bannedPicks, setBannedPicks] = useState<string[]>([])
     const [pickedPokemon, setPickedPokemon] = useState<string[][]>(Array(settings.players.length).fill([]))
+    const [showComparison, setShowComparison] = useState<boolean>(false)
     const [showError, setShowError] = useState<boolean>(true)
 
     const error = response.data?.error
     const models = response.data?.pokemon ?? []
+    //const bannedModels = bannedPicks.map((pick) => models.find((model) => model.name === pick)).filter(UndefinedFilter<SpeciesModel>())
     const pickedModels = pickedPokemon.map((picks) =>
-        picks.map((pick) => 
-            models.find((model) => model.name === pick)).filter(UndefinedFilter<SpeciesModel>()
-        )
+        picks.map((pick) => models.find((model) => model.name === pick)).filter(UndefinedFilter<SpeciesModel>())
     )
 
     const poolStats = getPoolStats(models, settings.showMega, settings.showGmax)
@@ -99,6 +100,12 @@ export default function PickBan({ settings }: PickBanProps) {
         }
     }
 
+    function showTeams() {
+        if(pickedPokemon.flat().length) {
+            setShowComparison(!showComparison)
+        }
+    }
+
     return (
         <div className="flex flex-grow justify-center bg-neutral-900">
             {!models
@@ -132,9 +139,20 @@ export default function PickBan({ settings }: PickBanProps) {
                             </div>}
                             <div className="w-full relative overflow-hidden">
                                 <div className="absolute h-full picks-anim"></div>
+                                {/*<div className="flex flex-row flex-wrap items-center overflow-hidden">
+                                    <div className="px-2 font-bold">Banned</div>
+                                    {bannedModels.map((model) => 
+                                        <PickedPokemon key={model.name} model={filteredPokemonForms(model, variantIndex, settings.showMega, settings.showGmax)} color={settings.banColor} />
+                                    )}
+                                    {Array.from(Array((settings.bans * 2) - bannedModels.length)).map((und, index) =>
+                                        <PickedPokemon key={`ban_${index}`} color={"#333333"} />
+                                    )}
+                                </div>*/}
                                 {settings.players.map((player, num) => 
-                                    <div key={`player_${num}`} className="flex flex-row flex-wrap items-center overflow-hidden">
-                                        <div className="px-2 font-bold">{player.name}</div>
+                                    <div key={`player_${num}`} className="relative flex flex-row flex-wrap items-center overflow-hidden">
+                                        <button className="h-12 px-2 font-bold -skew-x-[20deg] hover:bg-white/20" onClick={() => showTeams()}>
+                                            <div className="relative skew-x-[20deg]">{player.name}</div>
+                                        </button>
                                         {pickedModels[num].map((model) => 
                                             <PickedPokemon key={model.name} model={filteredPokemonForms(model, variantIndex, settings.showMega, settings.showGmax)} color={player.color} />
                                         )}
@@ -147,9 +165,11 @@ export default function PickBan({ settings }: PickBanProps) {
                             {selectedPokemon && <PokemonDetails model={selectedPokemon} stats={poolStats} banColor={settings.banColor} players={settings.players} onBan={handleBan} onPlayerPick={handlePlayerPick} onUnpick={handleUnpick} />}
                         </div>
                     </div>
+                    {showComparison && <div className="absolute top-1/2 left-1/2 max-h-[90vh] shadow-lg -translate-x-1/2 -translate-y-1/2 overflow-auto">
+                        <PokemonCompare teams={pickedModels.map((team) => team.map((model) => filteredPokemonForms(model, variantIndex, settings.showMega, settings.showGmax)))} stats={poolStats} players={settings.players} onClose={() => setShowComparison(false)} />
+                    </div>}
                 </div>
             }
-
         </div>
     )
 }

@@ -1,9 +1,10 @@
+/* eslint-disable @next/next/no-img-element */
 import React, { useState } from "react"
-import Image from "next/image"
 import { PokemonModel } from "@data/pokemon";
 import { properName } from "@helpers/utilities";
 import { PlayerData } from "@components/settings";
 import { PokemonPoolStats } from "@components/pickban";
+import PokemonStatRow from "@components/pokemonstatrow";
 
 type PokemonStats = {
     hp: number,
@@ -54,7 +55,7 @@ export default function PokemonDetails({ model, min, max, stats, banColor, playe
         <div className="flex flex-col flex-grow gap-2 p-2">
             <div className="flex flex-row justify-center items-center gap-2">
                 <div className="relative">
-                    <Image src={model.sprite ?? "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/0.png"} alt={model.name} layout="intrinsic" width="100%" height="100%" />
+                    <img src={model.sprite ?? "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/0.png"} alt={model.name} width="100%" height="100%" />
                     {model.isShiny && <span className="absolute top-0 left-0">🌟</span>}
                 </div>
                 <div className="flex flex-col gap-1">
@@ -80,13 +81,13 @@ export default function PokemonDetails({ model, min, max, stats, banColor, playe
                 <div className="max-h-[35vh] overflow-x-hidden overflow-y-auto">
                     {visibleTab === "stats" && <div className="flex flex-col gap-2">
                         <div className="flex flex-col gap-0.5">
-                            <StatRow label={"Base Stat Total"} current={model.baseStatTotal} min={min?.total} max={max?.total} stats={stats?.total} />
-                            <StatRow label={"HP"} current={model.stats.hp} min={min?.hp} max={max?.hp} stats={stats?.hp} />
-                            <StatRow label={"Attack"} current={model.stats.attack} min={min?.attack} max={max?.attack} stats={stats?.attack} />
-                            <StatRow label={"Defense"} current={model.stats.defense} min={min?.defense} max={max?.defense} stats={stats?.defense} />
-                            <StatRow label={"Special Attack"} current={model.stats.specialAttack} min={min?.specialAttack} max={max?.specialAttack} stats={stats?.specialAttack} />
-                            <StatRow label={"Special Defense"} current={model.stats.specialDefense} min={min?.specialDefense} max={max?.specialDefense} stats={stats?.specialDefense} />
-                            <StatRow label={"Speed"} current={model.stats.speed} min={min?.speed} max={max?.speed} stats={stats?.speed} />
+                            <PokemonStatRow label={"Base Stat Total"} current={model.baseStatTotal} min={min?.total} max={max?.total} stats={stats?.total} />
+                            <PokemonStatRow label={"HP"} current={model.stats.hp} min={min?.hp} max={max?.hp} stats={stats?.hp} />
+                            <PokemonStatRow label={"Attack"} current={model.stats.attack} min={min?.attack} max={max?.attack} stats={stats?.attack} />
+                            <PokemonStatRow label={"Defense"} current={model.stats.defense} min={min?.defense} max={max?.defense} stats={stats?.defense} />
+                            <PokemonStatRow label={"Special Attack"} current={model.stats.specialAttack} min={min?.specialAttack} max={max?.specialAttack} stats={stats?.specialAttack} />
+                            <PokemonStatRow label={"Special Defense"} current={model.stats.specialDefense} min={min?.specialDefense} max={max?.specialDefense} stats={stats?.specialDefense} />
+                            <PokemonStatRow label={"Speed"} current={model.stats.speed} min={min?.speed} max={max?.speed} stats={stats?.speed} />
                         </div>
                         <div className="flex flex-row flex-wrap justify-center items-center gap-1 text-sm">
                             <div className="mr-2">{model.abilities.length > 1 ? "Abilities" : "Ability"}</div>
@@ -113,44 +114,6 @@ export default function PokemonDetails({ model, min, max, stats, banColor, playe
                 {players.map((player, index) =>
                     <button key={`player_${index}`} className="px-2 py-1 bg-gray-500 rounded-md hover:grayscale-[0.5] hover:brightness-125" style={{ backgroundColor: player.color }} onClick={() => handlePlayerPick(index)}>{player.name}&apos;s Pick</button>
                 )}
-            </div>
-        </div>
-    )
-}
-
-type StatRowProps = {
-    label: string,
-    current: number,
-    min?: number,
-    max?: number,
-    stats?: number[],
-}
-
-function StatRow({ label, current, min, max, stats }: StatRowProps) {
-    const percentileIndex = stats ? stats.findIndex((val) => val === current) : -1
-    const percentile = stats ? (stats.length - percentileIndex) / stats.length : -1
-    const ratio = percentile > 0 ? percentile : max ? (current - (min ?? 0)) / (max - (min ?? 0)) : undefined
-    const colorClass = ratio !== undefined
-        ? ratio > 0.9 
-            ? "bg-emerald-700" 
-            : ratio > 0.7 
-                ? "bg-lime-700" 
-                : ratio > 0.5 
-                    ? "bg-yellow-700" 
-                    : ratio > 0.3 
-                        ? "bg-amber-700" 
-                        : ratio > 0.1 
-                            ? "bg-orange-700" 
-                            : "bg-red-700" 
-        : "bg-neutral-600"
-    return (
-        <div className="flex flex-row gap-2">
-            <span className="flex-grow font-semibold">{label}</span>
-            <div className="relative w-28 text-right">
-                <span className="relative z-10">{current}</span>
-                {(stats || min && max) && <div className="absolute right-0 bottom-0 w-full flex justify-end h-2 bg-neutral-700">
-                    <div className={colorClass} style={{ width: ratio ? `${ratio * 7}rem` : "1px" }}></div>
-                </div>}
             </div>
         </div>
     )

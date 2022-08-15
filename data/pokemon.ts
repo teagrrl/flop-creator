@@ -40,7 +40,7 @@ export class PokemonModel {
         this.weight = data.weight / 10
 
         this.isShiny = Math.random() < shinyRate
-        this.artwork = data.sprites.other["official-artwork"].front_default
+        this.artwork = data.sprites.other["official-artwork"].front_default ?? (this.isShiny ? data.sprites.other.home.front_shiny : data.sprites.other.home.front_default)
         this.sprite = this.isShiny ? data.sprites.front_shiny : data.sprites.front_default
         this.moves = data.moves.map((move) => move.move.name).sort()
     }
@@ -89,6 +89,7 @@ export function FormFilter(showMega?: boolean, showGmax?: boolean) {
     return (model: PokemonModel) => 
         true 
         && !(model.name.endsWith("-totem") || model.name.includes("-totem-")) // ignore totem pokemon 
+        && !model.name.endsWith("-hisui") // ignore hisui pokemon until they are properly in a mainline game
         && !(!showMega && model.name.endsWith("-mega")) // ignore mega-evolution with flag
         && !(!showGmax && model.name.endsWith("-gmax")) // ignore gigantamax with flag
 }
