@@ -1,7 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 import React, { useState } from "react"
 import { PokemonModel } from "@data/pokemon";
-import { properName } from "@helpers/utilities";
+import { possessive, properName } from "@helpers/utilities";
 import { PlayerData } from "@components/settings";
 import { PokemonPoolStats } from "@components/pickban";
 import PokemonStatRow from "@components/pokemonstatrow";
@@ -112,7 +112,7 @@ export default function PokemonDetails({ model, min, max, stats, banColor, playe
                 <button className="px-2 py-1 bg-gray-500 rounded-md hover:grayscale-[0.5] hover:brightness-125" style={{ backgroundColor: banColor }} onClick={handleBan}>Ban</button>
                 <button className="px-2 py-1 bg-gray-500 rounded-md hover:grayscale-[0.5] hover:brightness-125" onClick={handleUnpick}>Reset Pick</button>
                 {players.map((player, index) =>
-                    <button key={`player_${index}`} className="px-2 py-1 bg-gray-500 rounded-md hover:grayscale-[0.5] hover:brightness-125" style={{ backgroundColor: player.color }} onClick={() => handlePlayerPick(index)}>{player.name}&apos;s Pick</button>
+                    <button key={`player_${index}`} className="px-2 py-1 bg-gray-500 rounded-md hover:grayscale-[0.5] hover:brightness-125" style={{ backgroundColor: player.color }} onClick={() => handlePlayerPick(index)}>{possessive(player.name)} Pick</button>
                 )}
             </div>
         </div>

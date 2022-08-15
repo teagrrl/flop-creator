@@ -20,7 +20,7 @@ export default function PokemonCard({ name, model, bgOverride, onClick }: Pokemo
     return (
         <button className={`relative w-[7vw] max-h-[25vh] flex flex-col flex-grow justify-center items-center bg-neutral-900/80 hover:bg-neutral-700/60 shadow-md`} style={{ backgroundColor: hexToRGBA(bgOverride) }} onClick={handleClick}>
             <div className="flex flex-col flex-grow items-center justify-center overflow-hidden">
-                <img src={model.artwork ?? model.sprite ?? "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/0.png"} alt={model.name} width="100%" height="100%" />
+                <img className="max-h-[80%]" src={model.artwork ?? model.sprite ?? "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/0.png"} alt={model.name} width="100%" height="100%" />
                 <div className="text-lg font-semibold text-center">{name ?? model.name}</div>
                 <div className="absolute top-0 right-0 flex flex-wrap justify-end gap-0.5 text-xs">
                     {model.types.map((type) => 

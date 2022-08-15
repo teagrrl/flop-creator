@@ -1,3 +1,4 @@
+import { trainerClasses } from "@helpers/utilities"
 import React, { useEffect, useState } from "react"
 
 type SettingsProps = {
@@ -59,9 +60,7 @@ export default function Settings({ savedSettings, onChangeSettings }: SettingsPr
     }
 
     function onChangePlayerData(event: React.ChangeEvent<HTMLInputElement>, type: "name" | "color", index: number) {
-        const updatedData = Array.from(playerData)
-        updatedData[index][type] = event.target.value
-        setPlayerData(updatedData)
+        updatePlayerData(index, type, event.target.value)
     }
 
     function onChangeBanColor(event: React.ChangeEvent<HTMLInputElement>) {
@@ -80,6 +79,17 @@ export default function Settings({ savedSettings, onChangeSettings }: SettingsPr
         setAllowRandom(event.target.checked)
     }
 
+    function updatePlayerData(index: number, type: "name" | "color", value: string) {
+        const updatedData = Array.from(playerData)
+        updatedData[index][type] = value
+        setPlayerData(updatedData)
+    }
+
+    function getRandomTrainerName(index: number) {
+        const randomClass = trainerClasses[Math.floor(Math.random() * trainerClasses.length)]
+        updatePlayerData(index, "name", randomClass)
+    }
+
     return (
         <div className="h-full w-full flex justify-center bg-neutral-800 overflow-auto">
             <div className="w-full max-w-3xl flex flex-col first-letter:gap-4">
@@ -94,7 +104,8 @@ export default function Settings({ savedSettings, onChangeSettings }: SettingsPr
                                 <h3 className="flex-grow text-2xl font-bold text-center">Player {index + 1}</h3>
                                 <div className="flex flex-row gap-4 items-center">
                                     <h3 className="flex-grow text-xl font-semibold">Name</h3>
-                                    <input className="px-4 py-2 rounded-md text-black" type="text" placeholder="Name of this player..." value={data.name} onChange={(e) => onChangePlayerData(e, "name", index)} />
+                                    <input className="w-40 px-4 py-2 rounded-md text-black" type="text" placeholder="Name of this player..." value={data.name} onChange={(e) => onChangePlayerData(e, "name", index)} />
+                                    <button className="px-3 py-2 rounded-md text-black bg-white hover:bg-slate-200" onClick={() => getRandomTrainerName(index)}>🎲</button>
                                 </div>
                                 <div className="flex flex-row gap-4 items-center">
                                     <h3 className="flex-grow text-xl font-semibold">Color</h3>
