@@ -1,5 +1,5 @@
 /* eslint-disable @next/next/no-img-element */
-import React from "react"
+import React, { useState } from "react"
 import { PokemonModel } from "@data/pokemon"
 import { hexToRGBA, possessive, properName } from "@helpers/utilities"
 import { PlayerData } from "@components/settings"
@@ -25,8 +25,48 @@ type PokemonCompareProps = {
     onClose?: Function,
 }
 
+type SortType = "hp" | "attack" | "defense" | "specialAttack" | "specialDefense" | "speed" | "total"
+
+type SortLabel = {
+    label: string,
+    type: SortType,
+}
+
+const sortLabels: SortLabel[] = [
+    {
+        label: "BST",
+        type: "total",
+    },
+    {
+        label: "HP",
+        type: "hp",
+    },
+    {
+        label: "Atk",
+        type: "attack",
+    },
+    {
+        label: "Def",
+        type: "defense",
+    },
+    {
+        label: "SpAtk",
+        type: "specialAttack",
+    },
+    {
+        label: "SpDef",
+        type: "specialDefense",
+    },
+    {
+        label: "Spe",
+        type: "speed",
+    },
+]
+
 export default function PokemonCompare({ teams, min, max, stats, players, onClose }: PokemonCompareProps) {
-    teams = teams.map((team) => team.sort((model1, model2) => model2.baseStatTotal - model1.baseStatTotal))
+    const [sort, setSort] = useState<SortType>("speed")
+
+    teams = teams.map((team) => team.sort((model1, model2) => getStatValue(model2, sort) - getStatValue(model1, sort)))
 
     function handleClose() {
         if(onClose) {
@@ -34,15 +74,24 @@ export default function PokemonCompare({ teams, min, max, stats, players, onClos
         }
     }
 
+    function updateSort(type: SortType) {
+        setSort(type)
+    }
+
     return (
         <div className="overflow-auto bg-neutral-900">
             <div className="flex flex-col">
                 {players.map((player, num) => 
                     <div key={`player_${num}`} className="flex flex-col">
-                        <div className="px-4 py-2 text-center text-xl font-bold" style={{ backgroundColor: player.color }}>{possessive(player.name)} Team</div>
+                        <div className="relative flex flex-row px-4 py-2 items-center" style={{ backgroundColor: player.color }}>
+                            <span className="flex-grow text-center text-xl font-bold">{possessive(player.name)} Team</span>
+                            <div className="absolute right-2 flex flex-row gap-1 text-xs">{sortLabels.map((sort) => 
+                                <button key={`player_${num}_${sort.label}`} className="px-2 py-1 rounded-md bg-neutral-600/50 hover:bg-neutral-500/50" onClick={() => updateSort(sort.type)}>{sort.label}</button>
+                            )}</div>
+                        </div>
                         <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                             {teams[num].map((model, index) => 
-                                <div key={model.name} className="flex flex-col gap-2 px-4 py-1" style={{ backgroundColor: hexToRGBA(player.color, (Math.floor(index / 3) + 2) % 3 ? 0.1 : 0.2) }}>
+                                <div key={model.name} className="flex flex-col gap-2 px-4 py-2" style={{ backgroundColor: hexToRGBA(player.color, (Math.floor(index / 3) + 2) % 3 ? 0.1 : 0.2) }}>
                                     <div className="flex flex-row flex-grow gap-2 items-center">
                                         <div className="flex flex-col flex-grow justify-center items-center">
                                             <div className="relative h-12 w-12">
@@ -82,7 +131,26 @@ export default function PokemonCompare({ teams, min, max, stats, players, onClos
                     </div>
                 )}
             </div>
-            <button className="w-full px-4 py-2 text-lg font-semibold hover:bg-neutral-700" onClick={handleClose}>Close</button>
+            <button className="w-full px-4 py-2 text-lg font-semibold bg-neutral-700 hover:bg-neutral-600" onClick={handleClose}>Close</button>
         </div>
     )
+}
+
+function getStatValue(model: PokemonModel, stat: SortType) {
+    switch(stat) {
+        case "hp":
+            return model.stats.hp
+        case "attack":
+            return model.stats.attack
+        case "defense":
+            return model.stats.defense
+        case "specialAttack":
+            return model.stats.specialAttack
+        case "specialDefense":
+            return model.stats.specialDefense
+        case "speed":
+            return model.stats.speed
+        case "total":
+            return model.baseStatTotal
+    }
 }

@@ -90,6 +90,6 @@ export function FormFilter(showMega?: boolean, showGmax?: boolean) {
         true 
         && !(model.name.endsWith("-totem") || model.name.includes("-totem-")) // ignore totem pokemon 
         && !model.name.endsWith("-hisui") // ignore hisui pokemon until they are properly in a mainline game
-        && !(!showMega && model.name.endsWith("-mega")) // ignore mega-evolution with flag
+        && !(!showMega && (model.name.endsWith("-mega") || model.name.includes("-mega-"))) // ignore mega-evolution with flag
         && !(!showGmax && model.name.endsWith("-gmax")) // ignore gigantamax with flag
 }

@@ -6,7 +6,7 @@ import PokemonCard from "@components/pokemoncard"
 import PickedPokemon from "@components/pickedpokemon"
 import PokemonDetails from "@components/pokemondetails"
 import PokemonCompare from "@components/pokemoncompare"
-import { PlayerData, SettingsData } from "@components/settings"
+import { SettingsData } from "@components/settings"
 import { apiFetcher, UndefinedFilter } from "@helpers/utilities"
 
 type PickBanProps = {
@@ -100,6 +100,23 @@ export default function PickBan({ settings }: PickBanProps) {
         }
     }
 
+    function getPickColor(name: string) {
+        if(bannedPicks.includes(name)) return settings.banColor
+        const playerIndex = pickedPokemon.findIndex((picks) => picks.includes(name))
+        return playerIndex > -1 ? settings.players[playerIndex].color : undefined
+    }
+
+    function getRandomPokemon(index: number) {
+        const unpickedModels = models.filter((model) => ![...bannedPicks, ...pickedPokemon.flat()].includes(model.name))
+        const model = unpickedModels.length ? unpickedModels[Math.floor(Math.random() * unpickedModels.length)] : models[Math.floor(Math.random() * models.length)]
+        return filteredPokemonForms(model, index)
+    }
+    
+    function filteredPokemonForms(model: SpeciesModel, index: number) {
+        const forms = model.data.filter(FormFilter(settings.showMega, settings.showGmax))
+        return forms[index % forms.length]
+    }
+
     function showTeams() {
         if(pickedPokemon.flat().length) {
             setShowComparison(!showComparison)
@@ -115,9 +132,9 @@ export default function PickBan({ settings }: PickBanProps) {
                         <div className="absolute h-full selector-anim"></div>
                         <div className="h-full flex flex-row flex-wrap flex-grow gap-2 p-2 overflow-hidden">
                             {models.map((model) => 
-                                <PokemonCard key={model.name} name={model.name} model={filteredPokemonForms(model, variantIndex, settings.showMega, settings.showGmax)} bgOverride={getPickColor(model.name, bannedPicks, settings.banColor, pickedPokemon, settings.players)} onClick={() => viewPokemonDetails(filteredPokemonForms(model, variantIndex, settings.showMega, settings.showGmax))} />
+                                <PokemonCard key={model.name} name={model.name} model={filteredPokemonForms(model, variantIndex)} bgOverride={getPickColor(model.name)} onClick={() => viewPokemonDetails(filteredPokemonForms(model, variantIndex))} />
                             )}
-                            {settings.allowRandom && <button className={`relative w-[7vw] max-h-[25vh] flex flex-col flex-grow justify-center items-center bg-neutral-900/80 hover:bg-neutral-700/60 shadow-md`} onClick={() => viewPokemonDetails(getRandomPokemon(models, bannedPicks, pickedPokemon, variantIndex, settings.showMega, settings.showGmax))}>
+                            {settings.allowRandom && <button className={`relative w-[7vw] max-h-[25vh] flex flex-col flex-grow justify-center items-center bg-neutral-900/80 hover:bg-neutral-700/60 shadow-md`} onClick={() => viewPokemonDetails(getRandomPokemon(variantIndex))}>
                                 <div className="flex flex-col flex-grow items-center justify-center overflow-hidden">
                                     <div className="w-20 h-20 text-6xl">🎲</div>
                                     <div className="text-lg font-semibold text-center">Random</div>
@@ -154,7 +171,7 @@ export default function PickBan({ settings }: PickBanProps) {
                                             <div className="relative skew-x-[20deg]">{player.name}</div>
                                         </button>
                                         {pickedModels[num].map((model) => 
-                                            <PickedPokemon key={model.name} model={filteredPokemonForms(model, variantIndex, settings.showMega, settings.showGmax)} color={player.color} />
+                                            <PickedPokemon key={model.name} model={filteredPokemonForms(model, variantIndex)} color={player.color} onClick={(model: PokemonModel) => viewPokemonDetails(model)} />
                                         )}
                                         {Array.from(Array(settings.picks - pickedModels[num].length)).map((und, index) =>
                                             <PickedPokemon key={`player_${num}_${index}`} color={"#333333"} />
@@ -166,7 +183,7 @@ export default function PickBan({ settings }: PickBanProps) {
                         </div>
                     </div>
                     {showComparison && <div className="absolute top-1/2 left-1/2 max-h-[90vh] w-full max-w-[90vw] shadow-lg -translate-x-1/2 -translate-y-1/2 overflow-auto">
-                        <PokemonCompare teams={pickedModels.map((team) => team.map((model) => filteredPokemonForms(model, variantIndex, settings.showMega, settings.showGmax)))} stats={poolStats} players={settings.players} onClose={() => setShowComparison(false)} />
+                        <PokemonCompare teams={pickedModels.map((team) => team.map((model) => filteredPokemonForms(model, variantIndex)))} stats={poolStats} players={settings.players} onClose={() => setShowComparison(false)} />
                     </div>}
                 </div>
             }
@@ -218,21 +235,4 @@ function getPoolStats(models: SpeciesModel[], showMega?: boolean, showGmax?: boo
         poolStats[name].sort(poolSortDesc)
     }
     return poolStats as PokemonPoolStats
-}
-
-function getRandomPokemon(models: SpeciesModel[], banned: string[], picked: string[][], index: number, showMega?: boolean, showGmax?: boolean) {
-    const unpickedModels = models.filter((model) => ![...banned, ...picked.flat()].includes(model.name))
-    const model = unpickedModels.length ? unpickedModels[Math.floor(Math.random() * unpickedModels.length)] : models[Math.floor(Math.random() * models.length)]
-    return filteredPokemonForms(model, index, showMega, showGmax)
-}
-
-function filteredPokemonForms(model: SpeciesModel, index: number, showMega?: boolean, showGmax?: boolean) {
-    const forms = model.data.filter(FormFilter(showMega, showGmax))
-    return forms[index % forms.length]
-}
-
-function getPickColor(name: string, banned: string[], banColor: string, picked: string[][], players: PlayerData[]) {
-    if(banned.includes(name)) return banColor
-    const playerIndex = picked.findIndex((picks) => picks.includes(name))
-    return playerIndex > -1 ? players[playerIndex].color : undefined
 }
