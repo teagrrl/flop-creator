@@ -1,5 +1,6 @@
-import { trainerClasses } from "@helpers/utilities"
 import React, { useEffect, useState } from "react"
+import { trainerClasses } from "@helpers/utilities"
+import PopOverlay from "@components/popoverlay"
 
 type SettingsProps = {
     savedSettings: SettingsData
@@ -31,6 +32,7 @@ export default function Settings({ savedSettings, onChangeSettings }: SettingsPr
     const [showMega, setShowMega] = useState<boolean>(savedSettings.showMega)
     const [showGmax, setShowGmax] = useState<boolean>(savedSettings.showGmax)
     const [allowRandom, setAllowRandom] = useState<boolean>(savedSettings.allowRandom)
+    const [showFAQ, setShowFAQ] = useState<boolean>(false)
 
     useEffect(() => {
         if(onChangeSettings) {
@@ -141,9 +143,29 @@ export default function Settings({ savedSettings, onChangeSettings }: SettingsPr
                                 <input className="form-checkbox w-8 h-8 rounded-md" type="checkbox" checked={allowRandom} onChange={onChangeAllowRandom}  />
                             </label>
                         </div>
+                        <div className="flex flex-row gap-2 items-center justify-end">
+                            <button className="px-4 py-2 font-bold bg-neutral-900 hover:bg-neutral-700 rounded-md" title="What is FLOP?" onClick={() => setShowFAQ(true)}>?</button>
+                        </div>
                     </div>
                 </div>
             </div>
+            {showFAQ && <PopOverlay width="40vw" height="60vh">
+                <div className="flex flex-row gap-4 p-4 py-6 overflow-auto bg-neutral-900 rounded-lg">
+                    <div className="flex flex-col gap-1 text-4xl font-bold">
+                        <span>Friendly</span>
+                        <span>Limited</span>
+                        <span>OverUsed</span>
+                        <span>Pokemon</span>
+                        <div className="flex flex-grow justify-center items-end">
+                            <button className="px-4 py-2 font-semibold text-base bg-neutral-700 hover:bg-neutral-600 rounded-md" onClick={() => setShowFAQ(false)}>Close</button>
+                        </div>
+                    </div>
+                    <div className="flex flex-col gap-2 text-lg">
+                        <p><strong>FLOP</strong> is a (non-)competitive Pokémon format that my good friends ducks, vinone, TUИ, and valascano started playing because they were making lists of competitively terrible Pokémon that they wished to see in battle and the resulting games were fun enough to watch and play that we wanted to keep playing. One night, while we were staring at the janky Google Sheets pick and ban setup, someone joked, &ldquo;what if we had like one of those cool over-the-top esport graphics packages for this?&rdquo; and I thought, &ldquo;sure.&rdquo; So I proceded to spent far too many hours of my free time creating this website because I love my friends and their great ideas. Anyways, have fun and let me know if you encounter any bugs at <a className="underline" href="https://twitter.com/yoorilikeglass" target="_blank" rel="noreferrer">@yoorilikeglass</a>.</p>
+                        <p>This website is powered by <a className="underline" href="https://pokeapi.co/" target="_blank" rel="noreferrer">PokéAPI</a> and <a className="underline" href="https://vercel.com/" target="_blank" rel="noreferrer">Vercel</a>.</p>
+                    </div>
+                </div>
+            </PopOverlay>}
         </div>
     )
 }

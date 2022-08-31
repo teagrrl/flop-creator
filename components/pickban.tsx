@@ -7,6 +7,7 @@ import PickedPokemon from "@components/pickedpokemon"
 import PokemonDetails from "@components/pokemondetails"
 import PokemonCompare from "@components/pokemoncompare"
 import { SettingsData } from "@components/settings"
+import PopOverlay from "@components/popoverlay"
 import { apiFetcher, UndefinedFilter } from "@helpers/utilities"
 
 type PickBanProps = {
@@ -182,9 +183,9 @@ export default function PickBan({ settings }: PickBanProps) {
                             {selectedPokemon && <PokemonDetails model={selectedPokemon} stats={poolStats} banColor={settings.banColor} players={settings.players} onBan={handleBan} onPlayerPick={handlePlayerPick} onUnpick={handleUnpick} />}
                         </div>
                     </div>
-                    {showComparison && <div className="absolute top-1/2 left-1/2 max-h-[90vh] w-full max-w-[90vw] shadow-lg -translate-x-1/2 -translate-y-1/2 overflow-auto">
+                    {showComparison && <PopOverlay width="90vw" height="90vh">
                         <PokemonCompare teams={pickedModels.map((team) => team.map((model) => filteredPokemonForms(model, variantIndex)))} stats={poolStats} players={settings.players} onClose={() => setShowComparison(false)} />
-                    </div>}
+                    </PopOverlay>}
                 </div>
             }
         </div>
