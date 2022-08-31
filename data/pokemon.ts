@@ -2,6 +2,47 @@ import { Pokemon, PokemonSpecies, PokemonStat } from "pokenode-ts"
 
 const shinyRate = 1 / 8192
 
+export type SortType = "hp" | "attack" | "defense" | "specialAttack" | "specialDefense" | "speed" | "total" | "name"
+
+export type SortLabel = {
+    label: string,
+    type: SortType,
+}
+
+export const sortLabels: SortLabel[] = [
+    {
+        label: "Abc",
+        type: "name",
+    },
+    {
+        label: "BST",
+        type: "total",
+    },
+    {
+        label: "HP",
+        type: "hp",
+    },
+    {
+        label: "Atk",
+        type: "attack",
+    },
+    {
+        label: "Def",
+        type: "defense",
+    },
+    {
+        label: "SpAtk",
+        type: "specialAttack",
+    },
+    {
+        label: "SpDef",
+        type: "specialDefense",
+    },
+    {
+        label: "Spe",
+        type: "speed",
+    },
+]
 export class SpeciesModel {
     public readonly name: string
     //public readonly canMegaEvolve: boolean
@@ -9,14 +50,16 @@ export class SpeciesModel {
     public readonly data: PokemonModel[]
 
     constructor(data: PokemonSpecies, varietyData: Pokemon[]) {
-        this.name = data.names.find((name) => name.language.name === "en")?.name ?? data.name
+        const speciesName = data.names.find((name) => name.language.name === "en")?.name ?? data.name
+        this.name = speciesName
         //this.canMegaEvolve = data.varieties.filter((variety) => variety.pokemon.name.endsWith("-mega")).length > 0
         //this.canGigantamax = data.varieties.filter((variety) => variety.pokemon.name.endsWith("-gmax")).length > 0
-        this.data = varietyData.map((variety) => new PokemonModel(variety))
+        this.data = varietyData.map((variety) => new PokemonModel(variety, speciesName))
     }
 }
 
 export class PokemonModel {
+    public readonly species: string
     public readonly name: string
     public readonly types: string[]
     public readonly abilities: string[]
@@ -30,7 +73,8 @@ export class PokemonModel {
     public readonly sprite: string | null
     public readonly moves: string[]
 
-    constructor(data: Pokemon) {
+    constructor(data: Pokemon, speciesName: string) {
+        this.species = speciesName
         this.name = data.name
         this.types = data.types.map((type) => type.type.name)
         this.abilities = data.abilities.map((ability) => ability.ability.name)
@@ -82,6 +126,41 @@ export function SpeciesComparator(direction?: "asc" | "desc") {
             comparison *= -1
         }
         return comparison
+    }
+}
+
+export function StatComparator(type: SortType) {
+    return (model1: PokemonModel, model2: PokemonModel) => {
+        const value1 = getStatValue(model1, type)
+        const value2 = getStatValue(model2, type)
+        if(typeof value1 === "number" && typeof value2 === "number") return value2 - value1
+        if(value1 !== value2) {
+            if (value1 > value2 || value1 === void 0) return 1
+            if (value1 < value2 || value2 === void 0) return -1;
+        }
+        return value1 > value2 ? -1 : 1
+    }
+}
+
+function getStatValue(model: PokemonModel, stat: SortType) {
+    switch(stat) {
+        case "hp":
+            return model.stats.hp
+        case "attack":
+            return model.stats.attack
+        case "defense":
+            return model.stats.defense
+        case "specialAttack":
+            return model.stats.specialAttack
+        case "specialDefense":
+            return model.stats.specialDefense
+        case "speed":
+            return model.stats.speed
+        case "total":
+            return model.baseStatTotal
+        case "name":
+            return model.name
+        // no default
     }
 }
 

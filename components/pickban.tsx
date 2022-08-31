@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react"
 import useSWR from "swr"
 import { LookupApiResponse } from "@api/lookup"
-import { FormFilter, PokemonModel, SpeciesModel } from "@data/pokemon"
+import { FormFilter, PokemonModel, sortLabels, SortType, SpeciesModel, StatComparator } from "@data/pokemon"
 import PokemonCard from "@components/pokemoncard"
 import PickedPokemon from "@components/pickedpokemon"
 import PokemonDetails from "@components/pokemondetails"
@@ -27,6 +27,7 @@ export type PokemonPoolStats = {
 export default function PickBan({ settings }: PickBanProps) {
     const response = useSWR<LookupApiResponse>(`/api/lookup?names=${getLookupNames(settings.names)}`, apiFetcher)
 
+    const [sort, setSort] = useState<SortType>("name")
     const [variantIndex, setVariantIndex] = useState<number>(0)
     const [selectedPokemon, setSelectedPokemon] = useState<PokemonModel | null>(null)
     const [bannedPicks, setBannedPicks] = useState<string[]>([])
@@ -36,9 +37,14 @@ export default function PickBan({ settings }: PickBanProps) {
 
     const error = response.data?.error
     const models = response.data?.pokemon ?? []
-    //const bannedModels = bannedPicks.map((pick) => models.find((model) => model.name === pick)).filter(UndefinedFilter<SpeciesModel>())
+    const visibleModels = models.map((species) => filteredPokemonForms(species, variantIndex)).sort(StatComparator(sort))
+    /*const bannedModels = bannedPicks.map((pick) => models.find((model) => model.name === pick))
+        .filter(UndefinedFilter<SpeciesModel>())
+        .map((model) => filteredPokemonForms(model, variantIndex))*/
     const pickedModels = pickedPokemon.map((picks) =>
-        picks.map((pick) => models.find((model) => model.name === pick)).filter(UndefinedFilter<SpeciesModel>())
+        picks.map((pick) => models.find((model) => model.name === pick))
+            .filter(UndefinedFilter<SpeciesModel>())
+            .map((model) => filteredPokemonForms(model, variantIndex))
     )
 
     const poolStats = getPoolStats(models, settings.showMega, settings.showGmax)
@@ -47,12 +53,16 @@ export default function PickBan({ settings }: PickBanProps) {
         setVariantIndex(variantIndex + 1)
 	}, 15000)
 
+    function updateSortType() {
+        setSort(sortLabels[(sortLabels.findIndex((label) => label.type === sort) + 1) % sortLabels.length].type)
+    }
+
     function viewPokemonDetails(model: PokemonModel) {
         setSelectedPokemon(model)
     }
 
     function getSpeciesModelByName(name: string) {
-        return models.find((model) => model.data.filter((data) => data.name === name).length > 0)
+        return models.find((model) => model.name === name)
     }
 
     function handleBan(name: string) {
@@ -132,8 +142,8 @@ export default function PickBan({ settings }: PickBanProps) {
                     <div className="w-full h-full relative overflow-hidden">
                         <div className="absolute h-full selector-anim"></div>
                         <div className="h-full flex flex-row flex-wrap flex-grow gap-2 p-2 overflow-hidden">
-                            {models.map((model) => 
-                                <PokemonCard key={model.name} name={model.name} model={filteredPokemonForms(model, variantIndex)} bgOverride={getPickColor(model.name)} onClick={() => viewPokemonDetails(filteredPokemonForms(model, variantIndex))} />
+                            {visibleModels.map((model) => 
+                                <PokemonCard key={model.species} name={model.species} model={model} bgOverride={getPickColor(model.species)} onClick={() => viewPokemonDetails(model)} />
                             )}
                             {settings.allowRandom && <button className={`relative w-[7vw] max-h-[25vh] flex flex-col flex-grow justify-center items-center bg-neutral-900/80 hover:bg-neutral-700/60 shadow-md`} onClick={() => viewPokemonDetails(getRandomPokemon(variantIndex))}>
                                 <div className="flex flex-col flex-grow items-center justify-center overflow-hidden">
@@ -160,7 +170,7 @@ export default function PickBan({ settings }: PickBanProps) {
                                 {/*<div className="flex flex-row flex-wrap items-center overflow-hidden">
                                     <div className="px-2 font-bold">Banned</div>
                                     {bannedModels.map((model) => 
-                                        <PickedPokemon key={model.name} model={filteredPokemonForms(model, variantIndex, settings.showMega, settings.showGmax)} color={settings.banColor} />
+                                        <PickedPokemon key={model.name} model={model} color={settings.banColor} />
                                     )}
                                     {Array.from(Array((settings.bans * 2) - bannedModels.length)).map((und, index) =>
                                         <PickedPokemon key={`ban_${index}`} color={"#333333"} />
@@ -168,11 +178,11 @@ export default function PickBan({ settings }: PickBanProps) {
                                 </div>*/}
                                 {settings.players.map((player, num) => 
                                     <div key={`player_${num}`} className="relative flex flex-row flex-wrap items-center overflow-hidden">
-                                        <button className="h-12 px-2 font-bold -skew-x-[20deg] hover:bg-white/20" onClick={() => showTeams()}>
+                                        <button className="h-11 px-2 font-bold -skew-x-[20deg] hover:bg-white/20" onClick={() => showTeams()}>
                                             <div className="relative skew-x-[20deg]">{player.name}</div>
                                         </button>
                                         {pickedModels[num].map((model) => 
-                                            <PickedPokemon key={model.name} model={filteredPokemonForms(model, variantIndex)} color={player.color} onClick={(model: PokemonModel) => viewPokemonDetails(model)} />
+                                            <PickedPokemon key={model.name} model={model} color={player.color} onClick={(model: PokemonModel) => viewPokemonDetails(model)} />
                                         )}
                                         {Array.from(Array(settings.picks - pickedModels[num].length)).map((und, index) =>
                                             <PickedPokemon key={`player_${num}_${index}`} color={"#333333"} />
@@ -180,11 +190,17 @@ export default function PickBan({ settings }: PickBanProps) {
                                     </div>
                                 )}
                             </div>
+                            <div className="flex flex-row p-1 gap-1 text-xs justify-center items-center">
+                                <span className="font-semibold">Sort by:</span>
+                                <button className="px-2 py-1 rounded-md bg-neutral-600/50 hover:bg-neutral-500/50" onClick={updateSortType}>
+                                    {sortLabels.find((label) => label.type === sort)?.label ?? "Abc"}
+                                </button>
+                            </div>
                             {selectedPokemon && <PokemonDetails model={selectedPokemon} stats={poolStats} banColor={settings.banColor} players={settings.players} onBan={handleBan} onPlayerPick={handlePlayerPick} onUnpick={handleUnpick} />}
                         </div>
                     </div>
                     {showComparison && <PopOverlay width="90vw" height="90vh">
-                        <PokemonCompare teams={pickedModels.map((team) => team.map((model) => filteredPokemonForms(model, variantIndex)))} stats={poolStats} players={settings.players} onClose={() => setShowComparison(false)} />
+                        <PokemonCompare teams={pickedModels} stats={poolStats} players={settings.players} onClose={() => setShowComparison(false)} />
                     </PopOverlay>}
                 </div>
             }

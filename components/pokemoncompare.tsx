@@ -1,6 +1,6 @@
 /* eslint-disable @next/next/no-img-element */
 import React, { useState } from "react"
-import { PokemonModel } from "@data/pokemon"
+import { PokemonModel, sortLabels, SortType, StatComparator } from "@data/pokemon"
 import { hexToRGBA, possessive, properName } from "@helpers/utilities"
 import { PlayerData } from "@components/settings"
 import { PokemonPoolStats } from "@components/pickban"
@@ -25,48 +25,10 @@ type PokemonCompareProps = {
     onClose?: Function,
 }
 
-type SortType = "hp" | "attack" | "defense" | "specialAttack" | "specialDefense" | "speed" | "total"
-
-type SortLabel = {
-    label: string,
-    type: SortType,
-}
-
-const sortLabels: SortLabel[] = [
-    {
-        label: "BST",
-        type: "total",
-    },
-    {
-        label: "HP",
-        type: "hp",
-    },
-    {
-        label: "Atk",
-        type: "attack",
-    },
-    {
-        label: "Def",
-        type: "defense",
-    },
-    {
-        label: "SpAtk",
-        type: "specialAttack",
-    },
-    {
-        label: "SpDef",
-        type: "specialDefense",
-    },
-    {
-        label: "Spe",
-        type: "speed",
-    },
-]
-
 export default function PokemonCompare({ teams, min, max, stats, players, onClose }: PokemonCompareProps) {
     const [sort, setSort] = useState<SortType>("speed")
 
-    teams = teams.map((team) => team.sort((model1, model2) => getStatValue(model2, sort) - getStatValue(model1, sort)))
+    teams = teams.map((team) => team.sort(StatComparator(sort)))
 
     function handleClose() {
         if(onClose) {
@@ -134,23 +96,4 @@ export default function PokemonCompare({ teams, min, max, stats, players, onClos
             <button className="w-full px-4 py-2 text-lg font-semibold bg-neutral-700 hover:bg-neutral-600" onClick={handleClose}>Close</button>
         </div>
     )
-}
-
-function getStatValue(model: PokemonModel, stat: SortType) {
-    switch(stat) {
-        case "hp":
-            return model.stats.hp
-        case "attack":
-            return model.stats.attack
-        case "defense":
-            return model.stats.defense
-        case "specialAttack":
-            return model.stats.specialAttack
-        case "specialDefense":
-            return model.stats.specialDefense
-        case "speed":
-            return model.stats.speed
-        case "total":
-            return model.baseStatTotal
-    }
 }

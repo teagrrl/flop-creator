@@ -35,19 +35,19 @@ export default function PokemonDetails({ model, min, max, stats, banColor, playe
 
     function handleBan() {
         if(onBan) {
-            onBan(model.name)
+            onBan(model.species)
         }
     }
 
     function handlePlayerPick(index: number) {
         if(onPlayerPick) {
-            onPlayerPick(model.name, index)
+            onPlayerPick(model.species, index)
         }
     }
 
     function handleUnpick() {
         if(onUnpick) {
-            onUnpick(model.name)
+            onUnpick(model.species)
         }
     }
 
@@ -55,7 +55,7 @@ export default function PokemonDetails({ model, min, max, stats, banColor, playe
         <div className="flex flex-col flex-grow gap-2 p-2">
             <div className="flex flex-row justify-center items-center gap-2">
                 <div className="relative">
-                    <img src={model.sprite ?? "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/0.png"} alt={model.name} width="100%" height="100%" />
+                    <img src={model.sprite ?? "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/0.png"} alt={properName(model.name)} width="100%" height="100%" />
                     {model.isShiny && <span className="absolute top-0 left-0">🌟</span>}
                 </div>
                 <div className="flex flex-col gap-1">
