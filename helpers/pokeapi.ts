@@ -1,4 +1,4 @@
-import { SpeciesModel } from "@data/pokemon";
+import { SHINY_RATE, SpeciesModel } from "@data/pokemon";
 import { Pokemon, PokemonClient, PokemonSpecies } from "pokenode-ts";
 
 const api = new PokemonClient()
@@ -35,8 +35,10 @@ export async function getPokemonDataByNames(names: string[]): Promise<Record<str
             return [name, speciesOrNull ? await lookupPokemonByName(speciesOrNull.varieties.map((variety) => variety.pokemon.name)) : null]
         })
     ))
-    return Object.fromEntries(Object.keys(speciesOrNullMap).map((name) => {
+    const speciesOrNullKeys = Object.keys(speciesOrNullMap)
+    const forcedShinyIndex = process.env.FORCE_SHINY ? Math.floor(Math.random() * speciesOrNullKeys.length) : -1
+    return Object.fromEntries(speciesOrNullKeys.map((name, index) => {
         const speciesOrNull = speciesOrNullMap[name]
-        return [name, speciesOrNull ? new SpeciesModel(speciesOrNull, nameVarietiesMap[name] ?? []) : null]
+        return [name, speciesOrNull ? new SpeciesModel(speciesOrNull, nameVarietiesMap[name] ?? [], index === forcedShinyIndex ? true : Math.random() < SHINY_RATE) : null]
     }))
 }

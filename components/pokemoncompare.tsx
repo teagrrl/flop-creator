@@ -47,9 +47,9 @@ export default function PokemonCompare({ teams, min, max, stats, players, onClos
                     <div key={`player_${num}`} className="flex flex-col">
                         <div className="relative flex flex-row px-4 py-2 items-center" style={{ backgroundColor: player.color }}>
                             <span className="flex-grow text-center text-xl font-bold">{possessive(player.name)} Team</span>
-                            <div className="absolute right-2 flex flex-row gap-1 text-xs">{sortLabels.map((sort) => 
+                            {/*<div className="absolute right-2 flex flex-row gap-1 text-xs">{sortLabels.map((sort) => 
                                 <button key={`player_${num}_${sort.label}`} className="px-2 py-1 rounded-md bg-neutral-600/50 hover:bg-neutral-500/50" onClick={() => updateSort(sort.type)}>{sort.label}</button>
-                            )}</div>
+                            )}</div>*/}
                         </div>
                         <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                             {teams[num].map((model, index) => 

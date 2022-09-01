@@ -1,6 +1,6 @@
 import { Pokemon, PokemonSpecies, PokemonStat } from "pokenode-ts"
 
-const shinyRate = 1 / 8192
+export const SHINY_RATE = 1 / 8192
 
 export type SortType = "hp" | "attack" | "defense" | "specialAttack" | "specialDefense" | "speed" | "total" | "name"
 
@@ -49,12 +49,12 @@ export class SpeciesModel {
     //public readonly canGigantamax: boolean
     public readonly data: PokemonModel[]
 
-    constructor(data: PokemonSpecies, varietyData: Pokemon[]) {
+    constructor(data: PokemonSpecies, varietyData: Pokemon[], isShiny?: boolean) {
         const speciesName = data.names.find((name) => name.language.name === "en")?.name ?? data.name
         this.name = speciesName
         //this.canMegaEvolve = data.varieties.filter((variety) => variety.pokemon.name.endsWith("-mega")).length > 0
         //this.canGigantamax = data.varieties.filter((variety) => variety.pokemon.name.endsWith("-gmax")).length > 0
-        this.data = varietyData.map((variety) => new PokemonModel(variety, speciesName))
+        this.data = varietyData.map((variety) => new PokemonModel(variety, speciesName, isShiny))
     }
 }
 
@@ -73,7 +73,7 @@ export class PokemonModel {
     public readonly sprite: string | null
     public readonly moves: string[]
 
-    constructor(data: Pokemon, speciesName: string) {
+    constructor(data: Pokemon, speciesName: string, isShiny?: boolean) {
         this.species = speciesName
         this.name = data.name
         this.types = data.types.map((type) => type.type.name)
@@ -83,7 +83,7 @@ export class PokemonModel {
         this.height = data.height / 10
         this.weight = data.weight / 10
 
-        this.isShiny = Math.random() < shinyRate
+        this.isShiny = isShiny ?? false
         this.artwork = data.sprites.other["official-artwork"].front_default ?? (this.isShiny ? data.sprites.other.home.front_shiny : data.sprites.other.home.front_default)
         this.sprite = this.isShiny ? data.sprites.front_shiny : data.sprites.front_default
         this.moves = data.moves.map((move) => move.move.name).sort()

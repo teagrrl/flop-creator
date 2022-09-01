@@ -58,7 +58,7 @@ export default function PokemonDetails({ model, min, max, stats, banColor, playe
                     <img src={model.sprite ?? "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/0.png"} alt={properName(model.name)} width="100%" height="100%" />
                     {model.isShiny && <span className="absolute top-0 left-0">🌟</span>}
                 </div>
-                <div className="flex flex-col gap-1">
+                <div className="flex flex-col flex-grow gap-1">
                     <h1 className="text-2xl font-bold text-center">{properName(model.name)}</h1>
                     <div className="flex flex-row justify-center items-center gap-1 text-sm">
                         {model.types.map((type) => 
