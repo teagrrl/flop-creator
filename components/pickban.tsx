@@ -22,6 +22,8 @@ export type PokemonPoolStats = {
     specialDefense: number[],
     speed: number[],
     total: number[],
+    physicalBulk: number[],
+    specialBulk: number[],
 }
 
 export default function PickBan({ settings }: PickBanProps) {
@@ -235,7 +237,7 @@ function getLookupNames(names: string[]) {
 }
 
 function getPoolStats(models: SpeciesModel[], showMega?: boolean, showGmax?: boolean) {
-    const statNames = ["hp", "attack", "defense", "specialAttack", "specialDefense", "speed"] as const
+    const statNames = ["hp", "attack", "defense", "specialAttack", "specialDefense", "speed", "physicalBulk", "specialBulk"] as const
     const poolStatNames = [...statNames, "total"]
     const poolSortDesc = (n: number, m: number) => m - n
     const poolStats = models

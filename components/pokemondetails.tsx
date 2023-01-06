@@ -1,10 +1,11 @@
 /* eslint-disable @next/next/no-img-element */
 import React, { useState } from "react"
-import { PokemonModel } from "@data/pokemon";
-import { possessive, properName } from "@helpers/utilities";
-import { PlayerData } from "@components/settings";
-import { PokemonPoolStats } from "@components/pickban";
-import PokemonStatRow from "@components/pokemonstatrow";
+import { PokemonModel } from "@data/pokemon"
+import { possessive, properName } from "@helpers/utilities"
+import { PlayerData } from "@components/settings"
+import { PokemonPoolStats } from "@components/pickban"
+import PokemonStatRow from "@components/pokemonstatrow"
+import StatsRadar from "@components/statsradar"
 
 type PokemonStats = {
     hp: number,
@@ -14,6 +15,8 @@ type PokemonStats = {
     specialDefense: number,
     speed: number,
     total: number,
+    physicalBulk: number,
+    specialBulk: number,
 }
 
 type PokemonDetailsProps = {
@@ -28,7 +31,7 @@ type PokemonDetailsProps = {
     onUnpick?: Function,
 }
 
-type DetailTab = "stats" | "moves"
+type DetailTab = "stats" | "chart" | "moves"
 
 export default function PokemonDetails({ model, min, max, stats, banColor, players, onBan, onPlayerPick, onUnpick }: PokemonDetailsProps) {
     const [visibleTab, setVisibleTab] = useState<DetailTab>("stats")
@@ -71,6 +74,9 @@ export default function PokemonDetails({ model, min, max, stats, banColor, playe
                         <button className="px-2 py-0.5 pkmn-detail bg-slate-600 hover:bg-slate-500" onClick={() => setVisibleTab("stats")}>
                             <span>Stats</span>
                         </button>
+                        <button className="px-2 py-0.5 pkmn-detail bg-slate-600 hover:bg-slate-500" onClick={() => setVisibleTab("chart")}>
+                            <span>Chart</span>
+                        </button>
                         <button className="px-2 py-0.5 pkmn-detail bg-slate-600 hover:bg-slate-500" onClick={() => setVisibleTab("moves")}>
                             <span>Moves</span>
                         </button>
@@ -97,6 +103,9 @@ export default function PokemonDetails({ model, min, max, stats, banColor, playe
                                 </div>
                             )}
                         </div>
+                    </div>}
+                    {visibleTab === "chart" && <div className="flex flex-col items-center justify-center">
+                        <StatsRadar stats={model.stats} pool={stats} />
                     </div>}
                     {visibleTab === "moves" && <div className="flex flex-row flex-wrap justify-evenly items-center gap-1 px-1 text-sm">
                         <div className="mr-2">Moveset</div>
