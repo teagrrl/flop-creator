@@ -19,11 +19,11 @@ const gridColor = "rgba(255, 255, 255, 0.1)"
 export default function StatsRadar({ stats, pool }: StatsRadarProps) {
     const labels = ["Speed", ["Physical", "Attack"], ["Physical", "Bulk"], ["Special", "Bulk"], ["Special", "Attack"]]
     const max = pool ? [
-        Math.max(...pool.speed),
-        Math.max(...pool.attack),
-        Math.max(...pool.physicalBulk),
-        Math.max(...pool.specialBulk),
-        Math.max(...pool.specialAttack),
+        pool.speed.length > 0 ? Math.max(...pool.speed) : 100,
+        pool.speed.length > 0 ? Math.max(...pool.attack) : 100,
+        pool.speed.length > 0 ? Math.max(...pool.physicalBulk) : 100,
+        pool.speed.length > 0 ? Math.max(...pool.specialBulk) : 100,
+        pool.speed.length > 0 ? Math.max(...pool.specialAttack) : 100,
     ] : undefined
     const values = [
         stats.speed,
