@@ -1,7 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 import React from "react"
-import { PokemonModel } from "@data/pokemon";
-import { hexToRGBA, properName } from "@helpers/utilities";
+import { PokemonModel } from "@data/pokemon"
+import { hexToRGBA, properName } from "@helpers/utilities"
 
 type PickedPokemonProps = {
     model?: PokemonModel,

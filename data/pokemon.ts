@@ -2,7 +2,7 @@ import { Pokemon, PokemonSpecies, PokemonStat } from "pokenode-ts"
 
 export const SHINY_RATE = 1 / 8192
 
-export type SortType = "hp" | "attack" | "defense" | "specialAttack" | "specialDefense" | "speed" | "total" | "name"
+export type SortType = "hp" | "attack" | "defense" | "specialAttack" | "specialDefense" | "speed" | "total" | "name" | "physicalBulk" | "specialBulk"
 
 export type SortLabel = {
     label: string,
@@ -42,6 +42,14 @@ export const sortLabels: SortLabel[] = [
         label: "Spe",
         type: "speed",
     },
+    /*{
+        label: "PhBulk",
+        type: "physicalBulk",
+    },
+    {
+        label: "SpBulk",
+        type: "specialBulk",
+    },*/
 ]
 export class SpeciesModel {
     public readonly name: string
@@ -73,6 +81,8 @@ export class PokemonModel {
     public readonly sprite: string | null
     public readonly moves: string[]
 
+    public readonly badges: string[]
+
     constructor(data: Pokemon, speciesName: string, isShiny?: boolean) {
         this.species = speciesName
         this.name = data.name
@@ -84,9 +94,62 @@ export class PokemonModel {
         this.weight = data.weight / 10
 
         this.isShiny = isShiny ?? false
-        this.artwork = data.sprites.other["official-artwork"].front_default ?? (this.isShiny ? data.sprites.other.home.front_shiny : data.sprites.other.home.front_default)
         this.sprite = this.isShiny ? data.sprites.front_shiny : data.sprites.front_default
-        this.moves = data.moves.map((move) => move.move.name).sort()
+        this.artwork = data.sprites.other ? data.sprites.other["official-artwork"].front_default ?? (this.isShiny ? data.sprites.other.home.front_shiny : data.sprites.other.home.front_default) : this.sprite
+        this.moves = Array.from(new Set(data.moves.map((move) => move.move.name))).sort()
+
+        this.badges = this.tags()
+    }
+
+    tags() {
+        const tags: string[] = []
+        let adjustedPhysicalBulk = this.stats.physicalBulk * 17 / 16, // leftovers 
+            adjustedSpecialBulk = this.stats.specialBulk * 17 / 16
+        if(this.hasRecovery()) {
+            if(adjustedPhysicalBulk > 2) adjustedPhysicalBulk *= 2
+            if(adjustedSpecialBulk > 2) adjustedSpecialBulk *= 2
+        }
+        if(adjustedPhysicalBulk > 11.5) {
+            tags.push("def5")
+        } else if(adjustedPhysicalBulk > 5.5) {
+            tags.push("def4")
+        } else if(adjustedPhysicalBulk > 2.5) {
+            tags.push("def3")
+        }
+        if(adjustedSpecialBulk > 15) {
+            tags.push("spdef5")
+        } else if(adjustedSpecialBulk > 7) {
+            tags.push("spdef4")
+        } else if(adjustedSpecialBulk > 3) {
+            tags.push("spdef3")
+        }
+        if(this.canSetHazards()) {
+            tags.push("hazards")
+        }
+        if(this.canRemoveHazards()) {
+            tags.push("spinner")
+        }
+        return tags
+    }
+
+    hasRecovery() {
+        const recoveryMoves = [
+            "recover", "milk-drink", "soft-boiled", "slack-off", "heal-order", "roost", "wish",
+            "synthesis", "moonlight", "morning-sun", "shore-up", "lunar-blessing", "strength-sap"
+        ]
+        return this.moves.filter((move) => recoveryMoves.includes(move)).length > 0
+    }
+
+    canSetHazards() {
+        const hazardAbilities = ["toxic-debris"]
+        const hazardMoves = ["spikes", "ceaseless-edge", "stealth-rock", "toxic-spikes", "sticky-web"]
+        return this.abilities.filter((ability) => hazardAbilities.includes(ability)).length > 0 
+            || this.moves.filter((move) => hazardMoves.includes(move)).length > 0
+    }
+
+    canRemoveHazards() {
+        const removalMoves = ["rapid-spin", "mortal-spin", "defog", "tidy-up", "court-change"]
+        return this.moves.filter((move) => removalMoves.includes(move)).length > 0
     }
 }
 
@@ -97,6 +160,8 @@ export class BaseStatsModel {
     public readonly specialAttack: number
     public readonly specialDefense: number
     public readonly speed: number
+    public readonly physicalBulk: number
+    public readonly specialBulk: number
 
     constructor(data: PokemonStat[]) {
         this.hp = data.find((stat) => stat.stat.name === "hp")?.base_stat ?? -1
@@ -105,6 +170,25 @@ export class BaseStatsModel {
         this.specialAttack = data.find((stat) => stat.stat.name === "special-attack")?.base_stat ?? -1
         this.specialDefense = data.find((stat) => stat.stat.name === "special-defense")?.base_stat ?? -1
         this.speed = data.find((stat) => stat.stat.name === "speed")?.base_stat ?? -1
+        this.physicalBulk = this.calculateBulk("physical")
+        this.specialBulk = this.calculateBulk("special")
+    }
+
+    calculateBulk(type: "physical" | "special") {
+        const maxHp = 2 * this.hp + 204
+        let maxDef = 0
+        let attackerAtk = 0
+        if(type === "physical") {
+            maxDef = this.defense
+            attackerAtk = 100 * 359 // earthquake, jolly garchomp with 252 atk evs
+        }
+        if(type === "special") {
+            maxDef = this.specialDefense
+            attackerAtk = 80 * 369 // fiery dance, timid volcarona with 252 atk evs
+        }
+        maxDef = Math.floor((2 * maxDef + 99) * 1.1)
+        const damageDealt = ((42 * attackerAtk / maxDef) / 50 + 2) * 1.5
+        return maxHp / damageDealt
     }
 
     total() {
@@ -160,6 +244,10 @@ function getStatValue(model: PokemonModel, stat: SortType) {
             return model.baseStatTotal
         case "name":
             return model.name
+        case "physicalBulk":
+            return model.stats.physicalBulk
+        case "specialBulk":
+            return model.stats.specialBulk
         // no default
     }
 }

@@ -4,7 +4,7 @@ import PopOverlay from "@components/popoverlay"
 
 type SettingsProps = {
     savedSettings: SettingsData
-    onChangeSettings?: Function,
+    onChangeSettings?: (settings: SettingsData) => void,
 }
 
 export type PlayerData = {

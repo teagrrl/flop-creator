@@ -53,7 +53,7 @@ export default function PokemonCompare({ teams, min, max, stats, players, onClos
                         </div>
                         <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                             {teams[num].map((model, index) => 
-                                <div key={model.name} className="flex flex-col gap-2 px-4 py-2" style={{ backgroundColor: hexToRGBA(player.color, (Math.floor(index / 3) + 2) % 3 ? 0.1 : 0.2) }}>
+                                <div key={model.name} className="flex flex-col gap-2 px-4 py-2" style={{ backgroundColor: hexToRGBA(player.color, index % 2 ? 0.1 : 0.2) }}>
                                     <div className="flex flex-row flex-grow gap-2 items-center">
                                         <div className="flex flex-col flex-grow justify-center items-center">
                                             <div className="relative h-12 w-12">

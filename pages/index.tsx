@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react'
 import Head from 'next/head'
-import PickBan from '@components/pickban'
+import PickBan from '@components/pickban2'
 import Settings, { SettingsData } from '@components/settings'
 
 const defaultSettings: SettingsData = {
@@ -59,13 +59,17 @@ export default function IndexPage() {
 			<Head>
 				<title>FLOP</title>
 			</Head>
-			<div className={`flex flex-col ${isSettingsExpanded ? "flex-grow" : ""} overflow-hidden`}>
-				<button className="w-full px-4 py-2 text-lg font-semibold bg-gray-900 hover:bg-gray-600" onClick={openSettings}>Settings</button>
-				{isSettingsExpanded && <Settings savedSettings={settingsData} onChangeSettings={updateSettings} />}
+			<div className={`flex flex-col ${isSettingsExpanded ? "flex-grow overflow-auto" : ""}`}>
+				{isSettingsExpanded 
+					? <Settings savedSettings={settingsData} onChangeSettings={updateSettings} />
+					: <button className="w-full px-4 py-2 text-lg font-semibold bg-gray-900 hover:bg-gray-600" onClick={openSettings}>Settings</button>
+				}
 			</div>
-			<div className={`flex flex-col ${isPickBanExpanded ? "flex-grow" : ""}`}>
-				<button className="w-full px-4 py-2 text-lg font-semibold bg-gray-900 hover:bg-gray-600" onClick={openPickBan}>Pick/Ban</button>
-				{isPickBanExpanded && <PickBan settings={settingsData} />}
+			<div className={`flex flex-col ${isPickBanExpanded ? "flex-grow overflow-auto" : ""}`}>
+				{isPickBanExpanded 
+					? <PickBan settings={settingsData} />
+					: <button className="w-full px-4 py-2 text-lg font-semibold bg-gray-900 hover:bg-gray-600" onClick={openPickBan}>Pick/Ban</button>
+				}
 			</div>
 		</div>
 	)

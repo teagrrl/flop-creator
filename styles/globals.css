@@ -2,7 +2,43 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+	--scroll-track: rgb(24 24 27);
+	--scroll-thumb: rgb(255 255 255);
+	--scroll-track-hover: rgb(63, 63, 70);
+	--scroll-thumb-hover: rgb(212 212 216);
+	--bg-tooltip: rgb(244 244 245);
+}
 
+::-webkit-scrollbar {
+	height: 5px;
+	width: 5px;
+}
+
+::-webkit-scrollbar-thumb {
+	background: var(--scroll-thumb);
+	border-radius: 50px;
+}
+
+::-webkit-scrollbar-thumb:active,
+::-webkit-scrollbar-thumb:hover {
+	background: var(--scroll-thumb-hover);
+}
+
+::-webkit-scrollbar-track {
+	width: 5px;
+	border-radius: 50px;
+	background: var(--scroll-track);
+}
+
+::-webkit-scrollbar-track:active,
+::-webkit-scrollbar-track:hover {
+	background:var(--scroll-track-hover);
+}
+
+::-webkit-scrollbar-corner{
+	background: transparent;
+}
 .pkmn-detail {
 	transform: skew(-20deg);
 }
@@ -80,6 +116,10 @@
 	animation: pb-bg 75s ease-in-out infinite;
 }
 
+.next-pick-anim {
+	animation: pb-next 5s ease-in-out infinite;
+}
+
 @keyframes pb-bg {
 	0% {
 		transform: translateX(-20vw); 
@@ -89,5 +129,17 @@
 	}
 	100% {
 		transform: translateX(-20vw);
+	}
+}
+
+@keyframes pb-next {
+	0% {
+		opacity: 0.5; 
+	}
+	50% {
+		opacity: 1; 
+	}
+	100% {
+		opacity: 0.5; 
 	}
 }
