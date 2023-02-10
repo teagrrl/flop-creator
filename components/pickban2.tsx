@@ -166,11 +166,11 @@ export default function PickBan({ settings }: PickBanProps) {
                         <div className="flex-grow"></div>
                         {selectedPokemon !== null && <div className="flex flex-row flex-wrap gap-1 items-end text-sm">
                             <button className="flex-grow px-2 py-0.5 bg-gray-500 rounded-md hover:grayscale-[0.5] hover:brightness-125" onClick={() => setSelectedPokemon(null)}>Hide Details</button>
-                            {bannedPicks.length < settings.bans * settings.players.length && <button className="flex-grow px-2 py-0.5 bg-gray-500 rounded-md hover:grayscale-[0.5] hover:brightness-125" style={{ backgroundColor: settings.banColor }} onClick={handleBan}>Ban {properName(selectedPokemon.name)}</button>}
+                            {bannedPicks.length < settings.bans * settings.players.length && <button className="flex-grow px-2 py-0.5 bg-gray-500 rounded-md hover:grayscale-[0.5] hover:brightness-125" style={{ backgroundColor: settings.banColor }} onClick={handleBan}>Ban {selectedPokemon.species}</button>}
                             {settings.players.map((player, index) =>
                                 pickedPokemon[index].length < settings.picks && <button key={`player_${index}`} className="flex-grow px-2 py-0.5 bg-gray-500 rounded-md hover:grayscale-[0.5] hover:brightness-125" style={{ backgroundColor: player.color }} onClick={() => handlePlayerPick(index)}>{possessive(player.name)} Pick</button>
                             )}
-                            <button className="flex-grow px-2 py-0.5 bg-gray-500 rounded-md hover:grayscale-[0.5] hover:brightness-125" onClick={handleUnpick}>Reset {properName(selectedPokemon.name)}</button>
+                            <button className="flex-grow px-2 py-0.5 bg-gray-500 rounded-md hover:grayscale-[0.5] hover:brightness-125" onClick={handleUnpick}>Reset {selectedPokemon.species}</button>
                         </div>}
                     </div>
                     <div className="w-full h-full relative overflow-hidden">

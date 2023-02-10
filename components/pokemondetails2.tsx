@@ -5,6 +5,7 @@ import { properName } from "@helpers/utilities"
 import { PokemonPoolStats } from "@components/pickban"
 import PokemonStatRow from "@components/pokemonstatrow"
 import StatsRadar from "@components/statsradar"
+import PokemonType from "@components/pokemontype"
 
 type PokemonStats = {
     hp: number,
@@ -36,11 +37,7 @@ export default function PokemonDetails({ model, min, max, stats }: PokemonDetail
                     <div className="flex flex-col flex-grow gap-1">
                         <h1 className="text-2xl font-bold text-center">{properName(model.name)}</h1>
                         <div className="flex flex-row justify-center items-center gap-1 text-sm">
-                            {model.types.map((type) => 
-                                <div key={`${model.name}_${type}`} className={`px-2 py-0.5 pkmn-detail bg-${type}`}>
-                                    <span>{properName(type)}</span>
-                                </div>
-                            )}
+                            {model.types.map((type) => <PokemonType key={`${model.name}_${type}`} type={type} />)}
                         </div>
                     </div>
                 </div>
