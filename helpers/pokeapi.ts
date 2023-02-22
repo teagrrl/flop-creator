@@ -8,7 +8,6 @@ export async function listPokemonSpecies() {
     let page = 0
     let latestPage: { ids: number[], hasNext: boolean } = { ids: [], hasNext: true }
     do {
-        console.log(latestPage)
         latestPage = await listPokemonSpeciesPage(page)
         speciesIds.push(...latestPage.ids)
         page++
@@ -44,6 +43,7 @@ export async function listPokemonSpecies() {
                 .map((variety) => varietyData.find((pokemon) => pokemon.name === variety.pokemon.name))
                 .filter((data): data is Pokemon => data !== undefined)
                 .map((pokemon) => pokemon.sprites.other ? pokemon.sprites.other["official-artwork"].front_default : pokemon.sprites.front_default)
+                .filter((url): url is string => url !== null)
         }
     ))
 }

@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react'
 import Head from 'next/head'
-import PickBan from '@components/pickban2'
+import PickBan from '@components/pickban'
 import Settings, { SettingsData } from '@components/settings'
 
 const defaultSettings: SettingsData = {

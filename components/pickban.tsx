@@ -2,13 +2,13 @@ import React, { useEffect, useRef, useState } from "react"
 import useSWR from "swr"
 import { LookupApiResponse } from "@api/lookup"
 import { FormFilter, PokemonModel, sortLabels, SortType, SpeciesModel, StatComparator } from "@data/pokemon"
+import { apiFetcher, possessive, UndefinedFilter } from "@helpers/utilities"
+import { SettingsData } from "@components/settings"
 import PokemonCard from "@components/pokemoncard"
 import PickedPokemon from "@components/pickedpokemon"
 import PokemonDetails from "@components/pokemondetails"
-import PokemonCompare from "@components/pokemoncompare"
-import { SettingsData } from "@components/settings"
 import PopOverlay from "@components/popoverlay"
-import { apiFetcher, UndefinedFilter } from "@helpers/utilities"
+import PokemonCompare from "@components/pokemoncompare"
 
 type PickBanProps = {
     settings: SettingsData,
@@ -49,6 +49,8 @@ export default function PickBan({ settings }: PickBanProps) {
             .map((model) => filteredPokemonForms(model, variantIndex))
     )
 
+    const leftPlayers = settings.players.filter((player, index) => index % 2 === 0)
+    const rightPlayers = settings.players.filter((player, index) => index % 2 === 1)
     const poolStats = getPoolStats(models, settings.showMega, settings.showGmax)
 
 	useInterval(() => {
@@ -59,57 +61,50 @@ export default function PickBan({ settings }: PickBanProps) {
         setSort(sortLabels[(sortLabels.findIndex((label) => label.type === sort) + 1) % sortLabels.length].type)
     }
 
-    function viewPokemonDetails(model: PokemonModel) {
-        setSelectedPokemon(model)
+    function viewPokemonDetails(model?: PokemonModel) {
+        setSelectedPokemon(model ?? null)
     }
 
-    function getSpeciesModelByName(name: string) {
-        return models.find((model) => model.name === name)
-    }
-
-    function handleBan(name: string) {
-        if(bannedPicks.length >= settings.bans * 2) {
+    function handleBan() {
+        if(bannedPicks.length >= settings.bans * settings.players.length) {
             alert("You've banned enough Pokemon!")
             return
         }
-        const model = getSpeciesModelByName(name)
-        if(model) {
-            if(!bannedPicks.includes(model.name)) {
-                setBannedPicks([...bannedPicks, model.name])
+        if(selectedPokemon) {
+            if(!bannedPicks.includes(selectedPokemon.species)) {
+                setBannedPicks([...bannedPicks, selectedPokemon.species])
             }
-            setPickedPokemon(pickedPokemon.map((playerPicks) => playerPicks.filter((name) => model.name !== name)))
+            setPickedPokemon(pickedPokemon.map((playerPicks) => playerPicks.filter((name) => selectedPokemon.species !== name)))
         }
     }
 
-    function handlePlayerPick(name: string, num: number) {
+    function handlePlayerPick(num: number) {
         if(pickedPokemon[num].length >= settings.picks) {
             alert(`${settings.players[num].name} has picked enough Pokemon!`)
             return
         }
-        const model = getSpeciesModelByName(name)
-        if(model) {
-            if(bannedPicks.includes(model.name)) {
-                setBannedPicks(bannedPicks.filter((name) => model.name !== name))
+        if(selectedPokemon) {
+            if(bannedPicks.includes(selectedPokemon.species)) {
+                setBannedPicks(bannedPicks.filter((name) => selectedPokemon.species !== name))
             }
             setPickedPokemon(pickedPokemon.map((playerPicks, index) => {
-                if(num === index && !playerPicks.includes(model.name)) {
-                    return [...playerPicks, model.name]
+                if(num === index && !playerPicks.includes(selectedPokemon.species)) {
+                    return [...playerPicks, selectedPokemon.species]
                 }
-                if(num !== index && playerPicks.includes(model.name)) {
-                    return playerPicks.filter((name) => model.name !== name)
+                if(num !== index && playerPicks.includes(selectedPokemon.species)) {
+                    return playerPicks.filter((name) => selectedPokemon.species !== name)
                 }
                 return playerPicks
             }))
         }
     }
 
-    function handleUnpick(name: string) {
-        const model = getSpeciesModelByName(name)
-        if(model) {
-            if(bannedPicks.includes(model.name)) {
-                setBannedPicks(bannedPicks.filter((name) => model.name !== name))
+    function handleUnpick() {
+        if(selectedPokemon) {
+            if(bannedPicks.includes(selectedPokemon.species)) {
+                setBannedPicks(bannedPicks.filter((name) => selectedPokemon.species !== name))
             }
-            setPickedPokemon(pickedPokemon.map((playerPicks) => playerPicks.filter((name) => model.name !== name)))
+            setPickedPokemon(pickedPokemon.map((playerPicks) => playerPicks.filter((name) => selectedPokemon.species !== name)))
         }
     }
 
@@ -137,75 +132,93 @@ export default function PickBan({ settings }: PickBanProps) {
     }
 
     return (
-        <div className="flex flex-grow justify-center bg-neutral-900">
-            {!models
-                ? <div>Loading...</div>
-                : <div className="flex flex-row overflow-hidden">
+        <div className="flex flex-col flex-grow bg-neutral-900 overflow-hidden">
+            <div className="h-full flex flex-row flex-grow">
+                <div className="w-full relative overflow-hidden">
+                    <div className="absolute h-full picks-anim"></div>
+                    <div className="relative h-full flex flex-row">
+                        {leftPlayers.map((player, num) => <div key={`player_${num * 2}`} className="flex flex-col flex-grow gap-0.5">
+                            <button className="flex-grow font-bold text-2xl hover:bg-white/20" onClick={showTeams}>
+                                <div className="relative w-full h-full flex justify-center items-center">{player.name}</div>
+                            </button>
+                            {pickedModels[num * 2].map((model) => 
+                                <PickedPokemon key={model.name} model={model} color={player.color} align="right" onClick={viewPokemonDetails} />
+                            )}
+                            {Array.from(Array(settings.picks - pickedModels[num * 2].length)).map((player, index) =>
+                                <PickedPokemon key={`player_${num}_${index}`} color={index === 0 ? settings.players[num * 2].color : "#222222"} isHighlighted={index === 0} />
+                            )}
+                        </div>)}
+                    </div>
+                </div>
+                <div className="w-[75vw] min-w-[75vw] flex flex-col flex-grow">
+                    {error && showError && <div className="flex flex-col gap-1 p-2 bg-red-800">
+                        <div className="flex flex-row items-center ">
+                            <h2 className="flex-grow text-xl font-bold">Issues</h2>
+                            <button className="px-2 font-semibold bg-slate-300/20 hover:bg-slate-300/40" onClick={() => setShowError(false)}>Dismiss</button>
+                        </div>
+                        <p className="text-sm">{error}</p>
+                    </div>}
+                    <div className="flex flex-row p-2 gap-1 text-xs items-center">
+                        <span className="font-semibold">Sort by:</span>
+                        <button className="px-2 py-1 rounded-md bg-neutral-600/50 hover:bg-neutral-500/50" onClick={updateSortType}>
+                            {sortLabels.find((label) => label.type === sort)?.label ?? "Abc"}
+                        </button>
+                        <div className="flex-grow"></div>
+                        {selectedPokemon !== null && <div className="flex flex-row flex-wrap gap-1 items-end text-sm">
+                            <button className="flex-grow px-2 py-0.5 bg-gray-500 rounded-md hover:grayscale-[0.5] hover:brightness-125" onClick={() => setSelectedPokemon(null)}>Hide Details</button>
+                            {bannedPicks.length < settings.bans * settings.players.length && <button className="flex-grow px-2 py-0.5 bg-gray-500 rounded-md hover:grayscale-[0.5] hover:brightness-125" style={{ backgroundColor: settings.banColor }} onClick={handleBan}>Ban {selectedPokemon.species}</button>}
+                            {settings.players.map((player, index) =>
+                                pickedPokemon[index].length < settings.picks && <button key={`player_${index}`} className="flex-grow px-2 py-0.5 bg-gray-500 rounded-md hover:grayscale-[0.5] hover:brightness-125" style={{ backgroundColor: player.color }} onClick={() => handlePlayerPick(index)}>{possessive(player.name)} Pick</button>
+                            )}
+                            <button className="flex-grow px-2 py-0.5 bg-gray-500 rounded-md hover:grayscale-[0.5] hover:brightness-125" onClick={handleUnpick}>Reset {selectedPokemon.species}</button>
+                        </div>}
+                    </div>
                     <div className="w-full h-full relative overflow-hidden">
                         <div className="absolute h-full selector-anim"></div>
-                        <div className="h-full flex flex-row flex-wrap flex-grow gap-2 p-2 overflow-hidden">
-                            {visibleModels.map((model) => 
-                                <PokemonCard key={model.species} name={model.species} model={model} bgOverride={getPickColor(model.species)} onClick={() => viewPokemonDetails(model)} />
-                            )}
-                            {settings.allowRandom && <button className={`relative w-[7vw] max-h-[25vh] flex flex-col flex-grow justify-center items-center bg-neutral-900/80 hover:bg-neutral-700/60 shadow-md`} onClick={() => viewPokemonDetails(getRandomPokemon(variantIndex))}>
-                                <div className="flex flex-col flex-grow items-center justify-center overflow-hidden">
-                                    <div className="w-20 h-20 text-6xl">🎲</div>
-                                    <div className="text-lg font-semibold text-center">Random</div>
-                                    <div className="absolute top-0 right-0 flex flex-wrap justify-end gap-0.5 text-xs">
-                                        <div className={`px-2 py-0.5 pkmn-detail bg-questions text-center`}>
-                                            <span>???</span>
+                        {models.length > 0
+                            ? <div className="h-full overflow-x-hidden overflow-y-auto">
+                                <div className="flex flex-row flex-wrap gap-2 p-2">
+                                    {settings.allowRandom && <button className={`relative w-36 h-48 flex flex-col flex-grow justify-center items-center bg-neutral-900/80 hover:bg-neutral-700/60 shadow-md`} onClick={() => viewPokemonDetails(getRandomPokemon(variantIndex))}>
+                                        <div className="flex flex-col flex-grow items-center justify-center overflow-hidden">
+                                            <div className="w-20 h-20 text-6xl">🎲</div>
+                                            <div className="text-lg font-semibold text-center">Random</div>
+                                            <div className="absolute top-0 right-0 flex flex-wrap justify-end gap-0.5 text-xs">
+                                                <div className={`px-2 py-0.5 pkmn-detail bg-questions text-center`}>
+                                                    <span>???</span>
+                                                </div>
+                                            </div>
                                         </div>
-                                    </div>
+                                    </button>}
+                                    {visibleModels.map((model) => 
+                                        <PokemonCard key={model.species} name={model.species} model={model} bgOverride={getPickColor(model.species)} onClick={viewPokemonDetails} />
+                                    )}
                                 </div>
-                            </button>}
-                        </div>
-                    </div>
-                    <div className="w-80 flex overflow-hidden">
-                        <div className="flex flex-col flex-grow">
-                            {error && showError && <div className="flex flex-col gap-1 px-2 py-1 bg-red-800/80">
-                                <h2 className="text-xl font-bold">Issues</h2>
-                                <p className="text-sm">{error}</p>
-                                <button className="font-semibold bg-slate-300/20 hover:bg-slate-300/40" onClick={() => setShowError(false)}>Dismiss</button>
-                            </div>}
-                            <div className="w-full relative overflow-hidden">
-                                <div className="absolute h-full picks-anim"></div>
-                                {/*<div className="flex flex-row flex-wrap items-center overflow-hidden">
-                                    <div className="px-2 font-bold">Banned</div>
-                                    {bannedModels.map((model) => 
-                                        <PickedPokemon key={model.name} model={model} color={settings.banColor} />
-                                    )}
-                                    {Array.from(Array((settings.bans * 2) - bannedModels.length)).map((und, index) =>
-                                        <PickedPokemon key={`ban_${index}`} color={"#333333"} />
-                                    )}
-                                </div>*/}
-                                {settings.players.map((player, num) => 
-                                    <div key={`player_${num}`} className="relative flex flex-row flex-wrap items-center overflow-hidden">
-                                        <button className="h-11 px-2 font-bold -skew-x-[20deg] hover:bg-white/20" onClick={() => showTeams()}>
-                                            <div className="relative skew-x-[20deg]">{player.name}</div>
-                                        </button>
-                                        {pickedModels[num].map((model) => 
-                                            <PickedPokemon key={model.name} model={model} color={player.color} onClick={(model: PokemonModel) => viewPokemonDetails(model)} />
-                                        )}
-                                        {Array.from(Array(settings.picks - pickedModels[num].length)).map((und, index) =>
-                                            <PickedPokemon key={`player_${num}_${index}`} color={"#333333"} />
-                                        )}
-                                    </div>
-                                )}
                             </div>
-                            <div className="flex flex-row p-1 gap-1 text-xs justify-center items-center">
-                                <span className="font-semibold">Sort by:</span>
-                                <button className="px-2 py-1 rounded-md bg-neutral-600/50 hover:bg-neutral-500/50" onClick={updateSortType}>
-                                    {sortLabels.find((label) => label.type === sort)?.label ?? "Abc"}
-                                </button>
-                            </div>
-                            {selectedPokemon && <PokemonDetails model={selectedPokemon} stats={poolStats} banColor={settings.banColor} players={settings.players} onBan={handleBan} onPlayerPick={handlePlayerPick} onUnpick={handleUnpick} />}
-                        </div>
+                            : <div className="h-full w-full min-w-[75vw] flex flex-grow items-center justify-center font-bold text-6xl">Loading...</div>
+                        }
                     </div>
-                    {showComparison && <PopOverlay width="90vw" height="90vh">
-                        <PokemonCompare teams={pickedModels} stats={poolStats} players={settings.players} onClose={() => setShowComparison(false)} />
-                    </PopOverlay>}
+                    {selectedPokemon && <PokemonDetails model={selectedPokemon} stats={poolStats} />}
                 </div>
-            }
+                <div className="w-full relative overflow-hidden">
+                    <div className="absolute h-full picks-anim"></div>
+                    <div className="relative h-full flex flex-row">
+                        {rightPlayers.map((player, num) => <div key={`player_${num * 2 + 1}`} className="flex flex-col flex-grow gap-0.5">
+                            <button className="flex-grow font-bold text-2xl hover:bg-white/20" onClick={showTeams}>
+                                <div className="relative w-full h-full flex justify-center items-center">{player.name}</div>
+                            </button>
+                            {pickedModels[num * 2 + 1].map((model) => 
+                                <PickedPokemon key={model.name} model={model} color={player.color} align="left" onClick={viewPokemonDetails} />
+                            )}
+                            {Array.from(Array(settings.picks - pickedModels[num * 2 + 1].length)).map((player, index) =>
+                                <PickedPokemon key={`player_${num}_${index}`} color={index === 0 ? settings.players[num * 2 + 1].color : "#222222"} isHighlighted={index === 0} />
+                            )}
+                        </div>)}
+                    </div>
+                </div>
+                {showComparison && <PopOverlay width="90vw" height="90vh">
+                    <PokemonCompare teams={pickedModels} stats={poolStats} players={settings.players} onClose={() => setShowComparison(false)} />
+                </PopOverlay>}
+            </div>
         </div>
     )
 }
