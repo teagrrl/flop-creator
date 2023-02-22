@@ -3,6 +3,63 @@ import { Pokemon, PokemonClient, PokemonSpecies } from "pokenode-ts";
 
 const api = new PokemonClient()
 
+export async function listPokemonSpecies() {
+    const speciesIds = []
+    let page = 0
+    let latestPage: { ids: number[], hasNext: boolean } = { ids: [], hasNext: true }
+    do {
+        console.log(latestPage)
+        latestPage = await listPokemonSpeciesPage(page)
+        speciesIds.push(...latestPage.ids)
+        page++
+    } while(latestPage.hasNext)
+    const speciesData = (await Promise.all(
+        Array.from(new Set(speciesIds)).map(async (id) => {
+            return await api.getPokemonSpeciesById(id)
+                .then((data) => data)
+                .catch((error) => {
+                    console.error(error)
+                    return null
+                })
+        })
+    )).filter((data: PokemonSpecies | null): data is PokemonSpecies => data !== null)
+    const varietyIds = speciesData.map((species) => species.varieties.map((variety) => {
+        const match = variety.pokemon.url.match(/https\:\/\/pokeapi.co\/api\/v2\/pokemon\/(\d+)\//)
+        return match ? parseInt(match[1]) : null
+    })).flat().filter((id): id is number => id !== null)
+    const varietyData = (await Promise.all(
+        Array.from(new Set(varietyIds)).map(async (id) => {
+            return await api.getPokemonById(id)
+            .then((data) => data)
+            .catch((error) => {
+                console.error(error)
+                return null
+            })
+        })
+    )).filter((data: Pokemon | null): data is Pokemon => data !== null)
+    return speciesData.map((species) => (
+        {
+            name: species.names.find((name) => name.language.name === "en")?.name ?? species.name,
+            images: species.varieties
+                .map((variety) => varietyData.find((pokemon) => pokemon.name === variety.pokemon.name))
+                .filter((data): data is Pokemon => data !== undefined)
+                .map((pokemon) => pokemon.sprites.other ? pokemon.sprites.other["official-artwork"].front_default : pokemon.sprites.front_default)
+        }
+    ))
+}
+
+async function listPokemonSpeciesPage(page = 0, limit = 1000) {
+    const results = await api.listPokemonSpecies(page * limit, limit)
+    const ids = results.results.map((result) => {
+        const match = result.url.match(/https\:\/\/pokeapi.co\/api\/v2\/pokemon\-species\/(\d+)\//)
+        return match ? parseInt(match[1]) : null
+    }).filter((id): id is number => id !== null)
+    return {
+        ids,
+        hasNext: !!results.next,
+    }
+}
+
 export async function lookupPokemonByName(names: string[]) {
     const pokemonOrNull = await Promise.all(
         names.map(async (name) => {
