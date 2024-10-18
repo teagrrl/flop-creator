@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 import React, { useEffect, useState } from "react"
 import Image from "next/image"
 import Head from "next/head"
@@ -103,7 +104,7 @@ export default function FavesPage() {
 						<div className="w-full flex flex-row items-center gap-4">
 							{recentWinner && <div className="hidden md:block relative px-6 text-center text-xs">
 								<div className="relative h-14 w-14 lg:h-20 lg:w-20">
-									<Image alt={recentWinner.name} src={recentWinner.image} fill sizes="15vw" />
+									<img alt={recentWinner.name} src={recentWinner.image} width="100%" height="100%" />
 								</div>
 								<span className={`absolute -bottom-3 left-1/2 -translate-x-1/2 px-2 py-1 rounded-md ${recentWinner.change > 0 ? "bg-emerald-600" : "bg-neutral-600"}`}>
 									{plusMinusNumber(Math.round(recentWinner.change))}
@@ -112,7 +113,7 @@ export default function FavesPage() {
 							<div className="flex-grow"></div>
 							<div className="flex flex-col items-center gap-2">
 								<div className="relative w-28 h-28 md:h-40 md:w-40">
-									<Image alt={leftPokemon.name} src={leftPokemon.image} fill sizes="40vw" />
+									<img alt={leftPokemon.name} src={leftPokemon.image} width="100%" height="100%" />
 								</div>
 								<button
 									className="px-3 py-1 rounded-md bg-slate-700 hover:bg-slate-500"
@@ -124,7 +125,7 @@ export default function FavesPage() {
 							<div className="text-2xl md:text-4xl font-bold">OR</div>
 							<div className="flex flex-col items-center gap-2">
 								<div className="relative w-28 h-28 md:h-40 md:w-40">
-									<Image alt={rightPokemon.name} src={rightPokemon.image} fill sizes="40vw" />
+									<img alt={rightPokemon.name} src={rightPokemon.image} width="100%" height="100%" />
 								</div>
 								<button
 									className="px-3 py-1 rounded-md bg-slate-700 hover:bg-slate-500"
@@ -136,7 +137,7 @@ export default function FavesPage() {
 							<div className="flex-grow"></div>
 							{recentLoser && <div className="hidden md:block relative px-6 text-center text-xs">
 								<div className="relative h-20 w-20">
-									<Image alt={recentLoser.name} src={recentLoser.image} fill sizes="15vw" />
+									<img alt={recentLoser.name} src={recentLoser.image} width="100%" height="100%" />
 								</div>
 								<span className={`absolute -bottom-3 right-1/2 translate-x-1/2 px-2 py-1 rounded-md ${recentLoser.change < 0 ? "bg-rose-600" : "bg-neutral-600"}`}>
 									{plusMinusNumber(Math.round(recentLoser.change))}
@@ -166,7 +167,7 @@ function PokemonList({ title, list }: PokemonListProps) {
 			<div className="flex flex-row gap-2 items-center justify-center flex-wrap">
 				{list.map((pokemon) =>
 					<div key={pokemon.number} className="group relative w-10 h-10 md:w-16 md:h-16">
-						<Image alt={`${getPokemonName(pokemon.name)} (${Math.round(pokemon.elo ?? 1500)})`} src={pokemon.image} fill sizes="10vw" />
+						<img alt={`${getPokemonName(pokemon.name)} (${Math.round(pokemon.elo ?? 1500)})`} src={pokemon.image} width="100%" height="100%" />
 						<div className="hidden group-hover:block px-2 py-1 absolute top-0 left-1/2 -translate-y-8 -translate-x-1/2 z-10 whitespace-nowrap text-black bg-white/70 rounded-md">
 							<span className="font-medium">{getPokemonName(pokemon.name)}</span> <span>({Math.round(pokemon.elo ?? 1500)})</span>
 						</div>
