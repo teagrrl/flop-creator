@@ -144,8 +144,8 @@ export default function FavesPage() {
 							</div>}
 						</div>
 						<div className="flex-grow"></div>
-						<PokemonList title="Your Top Ten (So Far)" list={topTen} />
-						<PokemonList title="Your Least Favorites" list={bottomTen} />
+						{comparison.length > 10 && <PokemonList title="Your Top Ten (So Far)" list={topTen} />}
+						{comparison.length > 20 && <PokemonList title="Your Least Favorites" list={bottomTen} />}
 					</>
 				)}
 			</div>
