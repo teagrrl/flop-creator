@@ -20,7 +20,11 @@ type PokemonData = {
 }
 
 type PokemonScore = PokemonData & { elo: number, matches: number }
-type PokemonChange = PokemonData & { change: number } | undefined
+type PokemonChange = PokemonData & { change: number }
+
+const STARTING_ELO = 1500
+const PERFORMANCE_VALUE = 400
+const MINIMUM_CHANGE_PERCENTAGE = 0.004
 
 export default function FavesPage() {
 	const [isClient, setIsClient] = useState(false)
@@ -32,8 +36,8 @@ export default function FavesPage() {
 
 	const [leftIndex, setLeftIndex] = useState<number>(getRandomPokemonIndex())
 	const [rightIndex, setRightIndex] = useState<number>(getRandomPokemonIndex())
-	const [recentWinner, setRecentWinner] = useState<PokemonChange>(undefined)
-	const [recentLoser, setRecentLoser] = useState<PokemonChange>(undefined)
+	const [recentWinner, setRecentWinner] = useState<PokemonChange | undefined>(undefined)
+	const [recentLoser, setRecentLoser] = useState<PokemonChange | undefined>(undefined)
     const [showFAQ, setShowFAQ] = useState<boolean>(false)
 
 	const leftPokemon = pokemon[leftIndex]
@@ -46,27 +50,23 @@ export default function FavesPage() {
 	const bottomTen = Array.from(comparison).sort((p, q) => p.elo - q.elo).slice(0, 10).reverse()
 
 	function comparePokemon(winner: PokemonData, loser: PokemonData) {
-		const startingElo = 1500
-		const performanceValue = 400
-		const minimumPercentage = 0.004
-
 		const clone = Array.from(comparison)
 		const foundWinnerIndex = comparison.findIndex((pokemon) => pokemon.number === winner.number)
 		const foundLoserIndex = comparison.findIndex((pokemon) => pokemon.number === loser.number)
 		
-		const foundWinner = foundWinnerIndex > -1 ? comparison[foundWinnerIndex]: { ...winner, elo: startingElo, matches: 0 }
-		const foundLoser = foundLoserIndex > -1 ? comparison[foundLoserIndex]: { ...loser, elo: startingElo, matches: 0 }
+		const foundWinner = foundWinnerIndex > -1 ? comparison[foundWinnerIndex]: { ...winner, elo: STARTING_ELO, matches: 0 }
+		const foundLoser = foundLoserIndex > -1 ? comparison[foundLoserIndex]: { ...loser, elo: STARTING_ELO, matches: 0 }
 		const winnerElo = foundWinner.elo
 		const loserElo = foundLoser.elo
 		foundWinner.elo = Math.max(
-			((winnerElo * foundWinner.matches) + (loserElo + performanceValue)) / (foundWinner.matches + 1), 
-			winnerElo * (1 + minimumPercentage),
+			((winnerElo * foundWinner.matches) + (loserElo + PERFORMANCE_VALUE)) / (foundWinner.matches + 1), 
+			winnerElo * (1 + MINIMUM_CHANGE_PERCENTAGE),
 			winnerElo + 1,
 		)
 		foundWinner.matches++
 		foundLoser.elo = Math.min(
-			((loserElo * foundLoser.matches) + (winnerElo - performanceValue)) / (foundLoser.matches + 1), 
-			loserElo * (1 - minimumPercentage), 
+			((loserElo * foundLoser.matches) + (winnerElo - PERFORMANCE_VALUE)) / (foundLoser.matches + 1), 
+			loserElo * (1 - MINIMUM_CHANGE_PERCENTAGE), 
 			loserElo - 1,
 		)
 		foundLoser.matches++
@@ -86,6 +86,36 @@ export default function FavesPage() {
 		setRecentWinner({ ...foundWinner, change: foundWinner.elo - winnerElo })
 		setRecentLoser({ ...foundLoser, change: foundLoser.elo - loserElo })
 	}
+
+	/*function skipComparison(p1: PokemonData, p2: PokemonData) {
+		const clone = Array.from(comparison)
+		const p1Index = comparison.findIndex((pokemon) => pokemon.number === p1.number)
+		const p2Index = comparison.findIndex((pokemon) => pokemon.number === p2.number)
+
+		const p1Data = p1Index > -1 ? comparison[p1Index]: { ...p1, elo: STARTING_ELO, matches: 0 }
+		const p2Data = p2Index > -1 ? comparison[p2Index]: { ...p2, elo: STARTING_ELO, matches: 0 }
+		const p1Elo = p1Data.elo
+		const p2Elo = p2Data.elo
+		p1Data.elo = p1Data.matches > 0 ? p1Elo * p1Data.matches / (p1Data.matches + 1) : STARTING_ELO
+		p1Data.matches++
+		p2Data.elo = p2Data.matches > 0 ? p2Elo * p2Data.matches / (p2Data.matches + 1) : STARTING_ELO
+		p2Data.matches++
+
+		if(p1Index > -1) {
+			clone[p1Index] = p1Data
+		} else {
+			clone.push(p1Data)
+		}
+		if(p2Index > -1) {
+			clone[p2Index] = p2Data
+		} else {
+			clone.push(p2Data)
+		}
+		setComparison(clone)
+		randomizePokemon()
+		setRecentWinner({ ...p1Data, change: p1Data.elo - p1Elo })
+		setRecentLoser({ ...p2Data, change: p2Data.elo - p2Elo })
+	}*/
 
 	function reset() {
 		removeComparison()
@@ -130,48 +160,17 @@ export default function FavesPage() {
 						<div className="flex-grow"></div>
 						<h1 className="text-xl md:text-3xl font-bold mb-4 text-center">Which of these two do you like more?</h1>
 						<div className="w-full flex flex-row items-center gap-4">
-							{recentWinner && <div className="hidden md:block relative px-6 text-center text-xs">
-								<div className="relative h-14 w-14 lg:h-20 lg:w-20">
-									<img alt={recentWinner.name} src={recentWinner.image} width="100%" height="100%" />
-								</div>
-								<span className={`absolute -bottom-3 left-1/2 -translate-x-1/2 px-2 py-1 rounded-md ${recentWinner.change > 0 ? "bg-emerald-600" : "bg-neutral-600"}`}>
-									{plusMinusNumber(Math.round(recentWinner.change))}
-								</span>
-							</div>}
+							{recentWinner && <PokemonHistory pokemon={recentWinner} />}
 							<div className="flex-grow"></div>
-							<div className="flex flex-col items-center gap-2">
-								<div className="relative w-28 h-28 md:h-40 md:w-40">
-									<img alt={leftPokemon.name} src={leftPokemon.image} width="100%" height="100%" />
-								</div>
-								<button
-									className="px-3 py-1 rounded-md bg-slate-700 hover:bg-slate-500"
-									onClick={() => comparePokemon(leftPokemon, rightPokemon)}
-								>
-									{getPokemonName(leftPokemon.name)}
-								</button>	
-							</div>
+							<PokemonSelector pokemon={leftPokemon} onSelect={() => comparePokemon(leftPokemon, rightPokemon)} />
 							<div className="text-2xl md:text-4xl font-bold">OR</div>
-							<div className="flex flex-col items-center gap-2">
-								<div className="relative w-28 h-28 md:h-40 md:w-40">
-									<img alt={rightPokemon.name} src={rightPokemon.image} width="100%" height="100%" />
-								</div>
-								<button
-									className="px-3 py-1 rounded-md bg-slate-700 hover:bg-slate-500"
-									onClick={() => comparePokemon(rightPokemon, leftPokemon)}
-								>
-									{getPokemonName(rightPokemon.name)}
-								</button>
-							</div>
+							<PokemonSelector pokemon={rightPokemon} onSelect={() => comparePokemon(rightPokemon, leftPokemon)} />
 							<div className="flex-grow"></div>
-							{recentLoser && <div className="hidden md:block relative px-6 text-center text-xs">
-								<div className="relative h-20 w-20">
-									<img alt={recentLoser.name} src={recentLoser.image} width="100%" height="100%" />
-								</div>
-								<span className={`absolute -bottom-3 right-1/2 translate-x-1/2 px-2 py-1 rounded-md ${recentLoser.change < 0 ? "bg-rose-600" : "bg-neutral-600"}`}>
-									{plusMinusNumber(Math.round(recentLoser.change))}
-								</span>
-							</div>}
+							{recentLoser && <PokemonHistory pokemon={recentLoser} />}
 						</div>
+						{/*<div className="py-2">
+							<button className="px-3 py-1 rounded-md bg-neutral-600 hover:bg-neutral-500" onClick={() => skipComparison(leftPokemon, rightPokemon)}>Skip</button>
+						</div>*/}
 						<div className="flex-grow"></div>
 						{comparison.length > 10 && <PokemonList title="Your Top Ten (So Far)" list={topTen} />}
 						{comparison.length > 20 && <PokemonList title="Your Least Favorites" list={bottomTen} />}
@@ -194,6 +193,44 @@ export default function FavesPage() {
                     </div>
                 </div>
             </PopOverlay>}
+		</div>
+	)
+}
+
+type PokemonHistoryProps = {
+	pokemon: PokemonChange,
+}
+
+function PokemonHistory({ pokemon }: PokemonHistoryProps) {
+	return (
+		<div className="hidden md:block relative px-6 text-center text-xs">
+			<div className="relative h-20 w-20">
+				<img alt={pokemon.name} src={pokemon.image} width="100%" height="100%" />
+			</div>
+			<span className={`absolute -bottom-3 right-1/2 translate-x-1/2 px-2 py-1 rounded-md ${pokemon.change > 0 ? "bg-emerald-600" : ""}${pokemon.change === 0 ? "bg-neutral-600" : ""}${pokemon.change < 0 ? "bg-rose-600" : ""}`}>
+				{plusMinusNumber(Math.round(pokemon.change))}
+			</span>
+		</div>
+	)
+}
+
+type PokemonSelectorProps = {
+	pokemon: PokemonData,
+	onSelect?: () => void,
+}
+
+function PokemonSelector({ pokemon, onSelect }: PokemonSelectorProps) {
+	return (
+		<div className="flex flex-col items-center gap-2">
+			<div className="relative w-28 h-28 md:h-40 md:w-40">
+				<img alt={pokemon.name} src={pokemon.image} width="100%" height="100%" />
+			</div>
+			<button
+				className="px-3 py-1 rounded-md bg-slate-700 hover:bg-slate-500"
+				onClick={onSelect}
+			>
+				{getPokemonName(pokemon.name)}
+			</button>	
 		</div>
 	)
 }
@@ -227,5 +264,5 @@ function getPokemonName(name: string) {
 }
 
 function plusMinusNumber(num: number) {
-	return num > 0 ? `+${num}` : num < 0 ? num : "no change"
+	return num > 0 ? `+${num}` : num < 0 ? num : "±0"
 }
