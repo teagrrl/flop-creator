@@ -8128,13 +8128,8 @@
 		"varieties": [
 		{
 		"number": 678,
-		"name": "meowstic-male",
+		"name": "meowstic",
 		"image": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/678.png"
-		},
-		{
-		"number": 10025,
-		"name": "meowstic-female",
-		"image": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10025.png"
 		}
 		]
 		},
@@ -10491,13 +10486,8 @@
 		"varieties": [
 		{
 		"number": 876,
-		"name": "indeedee-male",
+		"name": "indeedee",
 		"image": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/876.png"
-		},
-		{
-		"number": 10186,
-		"name": "indeedee-female",
-		"image": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10186.png"
 		}
 		]
 		},
@@ -10986,13 +10976,8 @@
 		"varieties": [
 		{
 		"number": 916,
-		"name": "oinkologne-male",
+		"name": "oinkologne",
 		"image": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/916.png"
-		},
-		{
-		"number": 10254,
-		"name": "oinkologne-female",
-		"image": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10254.png"
 		}
 		]
 		},
@@ -11519,12 +11504,7 @@
 		"varieties": [
 		{
 		"number": 964,
-		"name": "palafin-zero",
-		"image": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/964.png"
-		},
-		{
-		"number": 10256,
-		"name": "palafin-hero",
+		"name": "palafin",
 		"image": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10256.png"
 		}
 		]
