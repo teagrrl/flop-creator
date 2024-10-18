@@ -90,6 +90,11 @@ export default function FavesPage() {
 		isClient && <div className="w-screen h-screen flex flex-col text-white overflow-hidden">
 			<Head>
 				<title>Your Favorite Pokemon</title>
+				<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" key="viewport" />
+				<meta name="description" content="Choose between Pokemon until you've found your favorites" key="description" />
+				<meta property="og:description" content="Choose between Pokemon until you've found your favorites" key="ogdescription" />
+				<meta property="og:site_name" content="Your Favorite Pokemon" key="ogsitename" />
+				<meta property="og:title" content="Your Favorite Pokemon" key="ogtitle" />
 			</Head>
 			<div className="h-full py-6 flex flex-col items-center justify-center bg-black">
 				{pokemon.length && (
