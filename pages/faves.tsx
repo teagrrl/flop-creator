@@ -20,7 +20,7 @@ type PokemonData = {
 }
 
 type PokemonScore = PokemonData & { elo: number, matches: number }
-type PokemonChange = PokemonData & { change: number }
+type PokemonChange = PokemonData & { change: number, hover?: string }
 
 const STARTING_ELO = 1500
 const PERFORMANCE_VALUE = 400
@@ -83,8 +83,8 @@ export default function FavesPage() {
 		}
 		setComparison(clone)
 		randomizePokemon()
-		setRecentWinner({ ...foundWinner, change: foundWinner.elo - winnerElo })
-		setRecentLoser({ ...foundLoser, change: foundLoser.elo - loserElo })
+		setRecentWinner({ ...foundWinner, change: foundWinner.elo - winnerElo, hover: getEloChangeText(winnerElo,foundWinner.elo) })
+		setRecentLoser({ ...foundLoser, change: foundLoser.elo - loserElo, hover: getEloChangeText(loserElo, foundLoser.elo) })
 	}
 
 	/*function skipComparison(p1: PokemonData, p2: PokemonData) {
@@ -203,13 +203,19 @@ type PokemonHistoryProps = {
 
 function PokemonHistory({ pokemon }: PokemonHistoryProps) {
 	return (
-		<div className="hidden md:block relative px-6 text-center text-xs">
+		<div className="group hidden md:block relative px-6 text-center text-xs">
 			<div className="relative h-20 w-20">
 				<img alt={pokemon.name} src={pokemon.image} width="100%" height="100%" />
 			</div>
-			<span className={`absolute -bottom-3 right-1/2 translate-x-1/2 px-2 py-1 rounded-md ${pokemon.change > 0 ? "bg-emerald-600" : ""}${pokemon.change === 0 ? "bg-neutral-600" : ""}${pokemon.change < 0 ? "bg-rose-600" : ""}`}>
+			<span className={`absolute -bottom-3 left-1/2 -translate-x-1/2 z-10 px-2 py-1 rounded-md ${pokemon.change > 0 ? "bg-emerald-600" : ""}${pokemon.change === 0 ? "bg-neutral-600" : ""}${pokemon.change < 0 ? "bg-rose-600" : ""}`}>
 				{plusMinusNumber(Math.round(pokemon.change))}
 			</span>
+			{pokemon.hover && (
+				<div className="hidden group-hover:block absolute -top-4 left-1/2 -translate-x-1/2 z-10 px-2 py-1 whitespace-nowrap text-black bg-white/70 rounded-md">
+					<p className="font-bold">{getPokemonName(pokemon.name)}</p>
+					<p>{pokemon.hover}</p>
+				</div>
+			)}
 		</div>
 	)
 }
@@ -230,7 +236,7 @@ function PokemonSelector({ pokemon, onSelect }: PokemonSelectorProps) {
 				onClick={onSelect}
 			>
 				{getPokemonName(pokemon.name)}
-			</button>	
+			</button>
 		</div>
 	)
 }
@@ -265,4 +271,8 @@ function getPokemonName(name: string) {
 
 function plusMinusNumber(num: number) {
 	return num > 0 ? `+${num}` : num < 0 ? num : "±0"
+}
+
+function getEloChangeText(before: number, after: number) {
+	return `${Math.round(before)} ⇒ ${Math.round(after)}`
 }
