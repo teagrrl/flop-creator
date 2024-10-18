@@ -87,17 +87,21 @@ export default function FavesPage() {
 	}
 
 	return (
-		isClient && <div className="w-screen h-screen flex flex-col text-white overflow-hidden">
+		<div className="w-screen h-screen flex flex-col text-white overflow-hidden">
 			<Head>
 				<title>Your Favorite Pokemon</title>
 				<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" key="viewport" />
 				<meta name="description" content="Choose between Pokemon until you've found your favorites" key="description" />
+				<meta name="twitter:card" content="summary" key="twsummary" />
+				<meta name="twitter:description" content="Choose between Pokemon until you've found your favorites" key="twdescription" />
+				<meta name="twitter:title" content="Your Favorite Pokemon" key="twtitle" />
+				<meta property="og:type" content="website" key="ogtype" />
 				<meta property="og:description" content="Choose between Pokemon until you've found your favorites" key="ogdescription" />
 				<meta property="og:site_name" content="Your Favorite Pokemon" key="ogsitename" />
 				<meta property="og:title" content="Your Favorite Pokemon" key="ogtitle" />
 			</Head>
 			<div className="h-full py-6 flex flex-col items-center justify-center bg-black">
-				{pokemon.length && (
+				{isClient && pokemon.length && (
 					<>
 						<div className="flex flex-row justify-center gap-2 text-sm lg:text-base">
 							<span className="px-2 py-1 rounded-md bg-slate-800">{comparison.length} / {pokemon.length} seen</span>
