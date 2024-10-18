@@ -45,10 +45,6 @@ export default function FavesPage() {
 	const topTen = Array.from(comparison).sort((p, q) => q.elo - p.elo).slice(0, 10)
 	const bottomTen = Array.from(comparison).sort((p, q) => p.elo - q.elo).slice(0, 10).reverse()
 
-	function getRandomPokemonIndex() {
-		return Math.floor(Math.random() * pokemon.length)
-	}
-
 	function comparePokemon(winner: PokemonData, loser: PokemonData) {
 		const startingElo = 1500
 		const performanceValue = 400
@@ -62,9 +58,17 @@ export default function FavesPage() {
 		const foundLoser = foundLoserIndex > -1 ? comparison[foundLoserIndex]: { ...loser, elo: startingElo, matches: 0 }
 		const winnerElo = foundWinner.elo
 		const loserElo = foundLoser.elo
-		foundWinner.elo = Math.max(((winnerElo * foundWinner.matches) + (loserElo + performanceValue)) / (foundWinner.matches + 1), winnerElo * (1 + minimumPercentage))
+		foundWinner.elo = Math.max(
+			((winnerElo * foundWinner.matches) + (loserElo + performanceValue)) / (foundWinner.matches + 1), 
+			winnerElo * (1 + minimumPercentage),
+			winnerElo + 1,
+		)
 		foundWinner.matches++
-		foundLoser.elo = Math.min(((loserElo * foundLoser.matches) + (winnerElo - performanceValue)) / (foundLoser.matches + 1), loserElo * (1 - minimumPercentage))
+		foundLoser.elo = Math.min(
+			((loserElo * foundLoser.matches) + (winnerElo - performanceValue)) / (foundLoser.matches + 1), 
+			loserElo * (1 - minimumPercentage), 
+			loserElo - 1,
+		)
 		foundLoser.matches++
 
 		if(foundWinnerIndex > -1) {
@@ -78,13 +82,26 @@ export default function FavesPage() {
 			clone.push(foundLoser)
 		}
 		setComparison(clone)
+		randomizePokemon()
+		setRecentWinner({ ...foundWinner, change: foundWinner.elo - winnerElo })
+		setRecentLoser({ ...foundLoser, change: foundLoser.elo - loserElo })
+	}
+
+	function reset() {
+		removeComparison()
+		randomizePokemon()
+	}
+
+	function getRandomPokemonIndex() {
+		return Math.floor(Math.random() * pokemon.length)
+	}
+
+	function randomizePokemon() {
 		const newLeftIndex = getRandomPokemonIndex()
 		let newRightIndex = getRandomPokemonIndex()
 		while(newRightIndex === newLeftIndex) newRightIndex = getRandomPokemonIndex()
 		setLeftIndex(newLeftIndex)
 		setRightIndex(newRightIndex)
-		setRecentWinner({ ...foundWinner, change: foundWinner.elo - winnerElo })
-		setRecentLoser({ ...foundLoser, change: foundLoser.elo - loserElo })
 	}
 
 	return (
@@ -108,7 +125,7 @@ export default function FavesPage() {
 							<span className="px-2 py-1 rounded-md bg-slate-800">{comparison.length} / {pokemon.length} seen</span>
 							<span className="px-2 py-1 rounded-md bg-slate-800">{totalMatches} compared</span>
 							<button className="px-3 py-1 rounded-md bg-neutral-600 hover:bg-neutral-500" onClick={() => setShowFAQ(true)}>?</button>
-							<button className="px-2 py-1 rounded-md bg-red-800 hover:bg-red-700" onClick={() => removeComparison()}>Reset</button>
+							<button className="px-2 py-1 rounded-md bg-red-800 hover:bg-red-700" onClick={reset}>Reset</button>
 						</div>
 						<div className="flex-grow"></div>
 						<h1 className="text-xl md:text-3xl font-bold mb-4 text-center">Which of these two do you like more?</h1>
