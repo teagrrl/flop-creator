@@ -215,7 +215,7 @@ export default function PickBan({ settings }: PickBanProps) {
                         </div>)}
                     </div>
                 </div>
-                {showComparison && <PopOverlay width="90vw" height="90vh">
+                {showComparison && <PopOverlay className="w-[90vw] h-[90vh]">
                     <PokemonCompare teams={pickedModels} stats={poolStats} players={settings.players} onClose={() => setShowComparison(false)} />
                 </PopOverlay>}
             </div>

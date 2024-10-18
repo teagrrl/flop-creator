@@ -95,7 +95,7 @@ export default function Settings({ savedSettings, onChangeSettings }: SettingsPr
     return (
         <div className="h-full w-full flex justify-center bg-neutral-800 overflow-auto">
             <div className="w-full max-w-3xl flex flex-col first-letter:gap-4">
-                <div className="grid grid-cols-2 gap-4 flex-grow py-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-grow px-4 md:px-0 py-6">
                     <div className="flex flex-col gap-2">
                         <h3 className="text-2xl font-bold">Draftable Pokemon</h3>
                         <textarea className="flex-grow px-4 py-2 rounded-md resize-none text-black" placeholder="Names of all the Pokemon in the draft pool separated by new lines..." value={pokemonNames} onChange={onChangePokemonNames} />
@@ -149,9 +149,9 @@ export default function Settings({ savedSettings, onChangeSettings }: SettingsPr
                     </div>
                 </div>
             </div>
-            {showFAQ && <PopOverlay width="40vw" height="60vh">
-                <div className="flex flex-row gap-4 p-4 py-6 overflow-auto bg-neutral-900 rounded-lg">
-                    <div className="flex flex-col gap-1 text-4xl font-bold">
+            {showFAQ && <PopOverlay className="w-[90vw] h-[90vh] md:w-[40vw] md:h-[60vh]">
+                <div className="flex flex-col md:flex-row gap-4 p-4 py-6 overflow-auto bg-neutral-900 rounded-lg">
+                    <div className="flex flex-row md:flex-col flex-wrap md:flex-nowrap gap-1 text-4xl font-bold">
                         <span>Friendly</span>
                         <span>Limited</span>
                         <span>OverUsed</span>
@@ -161,7 +161,7 @@ export default function Settings({ savedSettings, onChangeSettings }: SettingsPr
                         </div>
                     </div>
                     <div className="flex flex-col gap-2 text-lg">
-                        <p><strong>FLOP</strong> is a (non-)competitive Pokémon format that my good friends ducks, vinone, TUИ, and valascano started playing because they were making lists of competitively terrible Pokémon that they wished to see in battle and the resulting games were fun enough to watch and play that we wanted to keep playing. One night, while we were staring at the janky Google Sheets pick and ban setup, someone joked, &ldquo;what if we had like one of those cool over-the-top esport graphics packages for this?&rdquo; and I thought, &ldquo;sure.&rdquo; So I proceded to spent far too many hours of my free time creating this website because I love my friends and their great ideas. Anyways, have fun and let me know if you encounter any bugs at <a className="underline" href="https://twitter.com/yoorilikeglass" target="_blank" rel="noreferrer">@yoorilikeglass</a>.</p>
+                        <p><strong>FLOP</strong> is a (non-)competitive Pokémon format that my good friends ducks, vinone, TUИ, and valascano started playing because they were making lists of competitively terrible Pokémon that they wished to see in battle and the resulting games were fun enough to watch and play that we wanted to keep playing. One night, while we were staring at the janky Google Sheets pick and ban setup, someone joked, &ldquo;what if we had like one of those cool over-the-top esport graphics packages for this?&rdquo; and I thought, &ldquo;sure.&rdquo; So I proceded to spent far too many hours of my free time creating this website because I love my friends and their great ideas. Anyways, have fun and let me know if you encounter any bugs at <a className="underline" href="https://twitter.com/yoorilikeglass" target="_blank" rel="noreferrer">@yoorilikeglass</a> or <a className="underline" href="https://bsky.app/profile/yoori.space" target="_blank" rel="noreferrer">@yoori.space</a>.</p>
                         <p>This website is powered by <a className="underline" href="https://pokeapi.co/" target="_blank" rel="noreferrer">PokéAPI</a> and <a className="underline" href="https://vercel.com/" target="_blank" rel="noreferrer">Vercel</a>.</p>
                     </div>
                 </div>

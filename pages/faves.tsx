@@ -1,8 +1,8 @@
 /* eslint-disable @next/next/no-img-element */
 import React, { useEffect, useState } from "react"
-import Image from "next/image"
 import Head from "next/head"
 import { useLocalStorage } from "usehooks-ts"
+import PopOverlay from "@components/popoverlay"
 import * as SpeciesJson from "pages/api/species.json"
 
 type SpeciesData = {
@@ -34,6 +34,7 @@ export default function FavesPage() {
 	const [rightIndex, setRightIndex] = useState<number>(getRandomPokemonIndex())
 	const [recentWinner, setRecentWinner] = useState<PokemonChange>(undefined)
 	const [recentLoser, setRecentLoser] = useState<PokemonChange>(undefined)
+    const [showFAQ, setShowFAQ] = useState<boolean>(false)
 
 	const leftPokemon = pokemon[leftIndex]
 	const rightPokemon = pokemon[rightIndex]
@@ -106,6 +107,7 @@ export default function FavesPage() {
 						<div className="flex flex-row justify-center gap-2 text-sm lg:text-base">
 							<span className="px-2 py-1 rounded-md bg-slate-800">{comparison.length} / {pokemon.length} seen</span>
 							<span className="px-2 py-1 rounded-md bg-slate-800">{totalMatches} compared</span>
+							<button className="px-3 py-1 rounded-md bg-neutral-600 hover:bg-neutral-500" onClick={() => setShowFAQ(true)}>?</button>
 							<button className="px-2 py-1 rounded-md bg-red-800 hover:bg-red-700" onClick={() => removeComparison()}>Reset</button>
 						</div>
 						<div className="flex-grow"></div>
@@ -159,6 +161,22 @@ export default function FavesPage() {
 					</>
 				)}
 			</div>
+            {showFAQ && <PopOverlay className="w-[90vw] h-[90vh] md:w-[40vw] md:h-[60vh]">
+                <div className="flex flex-col md:flex-row gap-4 p-4 py-6 overflow-auto bg-neutral-900 rounded-lg">
+                    <div className="flex flex-row items-start md:items-center md:flex-col gap-4 md:gap-1 text-4xl font-bold">
+                        <span>Your Favorite Pokemon</span>
+                        <div className="flex flex-grow justify-center items-end">
+                            <button className="px-4 py-2 font-semibold text-base bg-neutral-700 hover:bg-neutral-600 rounded-md" onClick={() => setShowFAQ(false)}>Close</button>
+                        </div>
+                    </div>
+                    <div className="flex flex-col gap-2 text-lg">
+                        <p>You will be shown two Pokémon. Choose your favorite between the two. And then do it again and again until you&apos;re happy with your top ten list. Yes, it&apos;ll take forever. Yes, there are currently {pokemon.length} Pokémon to look at. There will be more. I&apos;ve tried to hand prune the list so you don&apos;t need to compare all fourteen forms of <a className="underline" href="https://www.serebii.net/pokedex-sm/774.shtml" target="_blank" rel="noreferrer">Minior</a> or every <a className="underline" href="https://bulbapedia.bulbagarden.net/wiki/List_of_Pok%C3%A9mon_with_form_differences#Cosplay_Pikachu" target="_blank" rel="noreferrer">Cosplay Pikachu</a>.</p>
+						<p>The numbers you see are part of the really bad faux-elo rating system I implemented. Maybe it&apos;ll become an actual elo rating system in the future. You might see numbers jump around a bunch but I promise it&apos;ll even out once you have done enough comparisons.</p>
+						<p>Have fun clicking on buttons and let me know if you encounter any issues or have any suggestions at <a className="underline" href="https://twitter.com/yoorilikeglass" target="_blank" rel="noreferrer">@yoorilikeglass</a> or <a className="underline" href="https://bsky.app/profile/yoori.space" target="_blank" rel="noreferrer">@yoori.space</a>.</p>
+                        <p>This website is powered by <a className="underline" href="https://pokeapi.co/" target="_blank" rel="noreferrer">PokéAPI</a> and <a className="underline" href="https://vercel.com/" target="_blank" rel="noreferrer">Vercel</a>.</p>
+                    </div>
+                </div>
+            </PopOverlay>}
 		</div>
 	)
 }
