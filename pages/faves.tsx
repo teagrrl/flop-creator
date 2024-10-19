@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from "react"
 import Head from "next/head"
 import { useLocalStorage } from "usehooks-ts"
+import { PokeballIcon } from "@components/icons"
 import PopOverlay from "@components/popoverlay"
 import * as SpeciesJson from "pages/api/species.json"
 
@@ -49,6 +50,8 @@ export default function FavesPage() {
 	const topTen = Array.from(comparison).sort((p, q) => q.elo - p.elo).slice(0, 10)
 	const bottomTen = Array.from(comparison).sort((p, q) => p.elo - q.elo).slice(0, 10).reverse()
 
+	const [isWinnerStays, setIsWinnerStays] = useLocalStorage<boolean>("winner_stays", false)
+
 	function comparePokemon(winner: PokemonData, loser: PokemonData) {
 		const clone = Array.from(comparison)
 		const foundWinnerIndex = comparison.findIndex((pokemon) => pokemon.number === winner.number)
@@ -82,7 +85,12 @@ export default function FavesPage() {
 			clone.push(foundLoser)
 		}
 		setComparison(clone)
-		randomizePokemon()
+		const mostMatches = clone.reduce((p, q) => { return p.matches > q.matches ? p : q }).matches
+		if(isWinnerStays && foundWinner.matches < mostMatches) {
+			randomizeLoser(loser)
+		} else {
+			randomizePokemon()
+		}
 		setRecentWinner({ ...foundWinner, change: foundWinner.elo - winnerElo, hover: getEloChangeText(winnerElo,foundWinner.elo) })
 		setRecentLoser({ ...foundLoser, change: foundLoser.elo - loserElo, hover: getEloChangeText(loserElo, foundLoser.elo) })
 	}
@@ -120,10 +128,25 @@ export default function FavesPage() {
 	function reset() {
 		removeComparison()
 		randomizePokemon()
+		setIsWinnerStays(false)
 	}
 
 	function getRandomPokemonIndex() {
 		return Math.floor(Math.random() * pokemon.length)
+	}
+
+	function randomizeLoser(loser: PokemonData) {
+		const loserIndex = pokemon.findIndex((pokemon) => pokemon.number === loser.number)
+		let newIndex = getRandomPokemonIndex()
+		if(loserIndex < 0) {
+			randomizePokemon()
+		} else if(loserIndex === leftIndex) {
+			while(leftIndex === newIndex) newIndex = getRandomPokemonIndex()
+			setLeftIndex(newIndex)
+		} else {
+			while(rightIndex === newIndex) newIndex = getRandomPokemonIndex()
+			setRightIndex(newIndex)
+		}
 	}
 
 	function randomizePokemon() {
@@ -152,8 +175,40 @@ export default function FavesPage() {
 				{isClient && pokemon.length && (
 					<>
 						<div className="flex flex-row justify-center gap-2 text-sm lg:text-base">
-							<span className="px-2 py-1 rounded-md bg-slate-800">{comparison.length} / {pokemon.length} seen</span>
-							<span className="px-2 py-1 rounded-md bg-slate-800">{totalMatches} compared</span>
+							{totalMatches >= 500 && <button className="group relative px-2 py-1 rounded-md bg-neutral-600 hover:bg-neutral-500">
+								<div className="flex flex-row gap-4" onClick={() => setIsWinnerStays(!isWinnerStays)}>
+									<div className="z-10">🎲</div>
+									<div className="z-10">🏆</div>
+								</div>
+								<div className={`absolute top-0 translate-y-0 ${isWinnerStays ? 'translate-x-7' : '-translate-x-2'} h-7 w-9 lg:w-10 lg:h-8 rounded-md bg-slate-500 group-hover:bg-slate-400 transition-transform`}>&nbsp;</div>
+								<div className="hidden group-hover:block px-2 py-1 absolute top-8 lg:top-9 left-1/2 -translate-x-1/2 z-10 whitespace-nowrap text-black bg-white/70 rounded-md">
+									<div>
+										<span className="hidden lg:inline-block">Matchup Type:&nbsp;</span>
+										<span>{isWinnerStays ? "Winner Stays" : "Random"}</span>
+									</div>
+									{isWinnerStays && <small>(until they don&apos;t)</small>}
+								</div>
+							</button>}
+							<div className="group relative px-2 py-1 rounded-md bg-slate-800">
+								<div className="flex flex-row items-center gap-1">
+									<span>{comparison.length} / {pokemon.length}&nbsp;</span>
+									<span className="hidden lg:inline">seen</span>
+									<PokeballIcon className="lg:hidden text-red align-middle" />
+								</div>
+								<div className="hidden group-hover:block lg:group-hover:hidden px-2 py-1 absolute -bottom-8 left-1/2 -translate-x-1/2 z-10 whitespace-nowrap text-black bg-white/70 rounded-md">
+									{comparison.length} of {pokemon.length} Pokémon Seen
+								</div>
+							</div>
+							<div className="group relative px-2 py-1 rounded-md bg-slate-800">
+								<div className="flex flex-row items-center gap-1">
+									<span>{totalMatches}&nbsp;</span>
+									<span className="hidden lg:inline">compared</span>
+									<span className="lg:hidden">⚔</span>
+								</div>
+								<div className="hidden group-hover:block lg:group-hover:hidden px-2 py-1 absolute -bottom-8 left-1/2 -translate-x-1/2 z-10 whitespace-nowrap text-black bg-white/70 rounded-md">
+									{totalMatches} Matchups Completed
+								</div>
+							</div>
 							<button className="px-3 py-1 rounded-md bg-neutral-600 hover:bg-neutral-500" onClick={() => setShowFAQ(true)}>?</button>
 							<button className="px-2 py-1 rounded-md bg-red-800 hover:bg-red-700" onClick={reset}>Reset</button>
 						</div>
