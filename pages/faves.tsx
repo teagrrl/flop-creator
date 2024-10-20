@@ -171,16 +171,16 @@ export default function FavesPage() {
 				<meta property="og:site_name" content="Your Favorite Pokemon" key="ogsitename" />
 				<meta property="og:title" content="Your Favorite Pokemon" key="ogtitle" />
 			</Head>
-			<div className="h-full py-6 flex flex-col items-center justify-center bg-black">
+			<div className="h-full py-2 lg:py-6 flex flex-col items-center justify-center bg-black">
 				{isClient && pokemon.length && (
 					<>
 						<div className="flex flex-row justify-center gap-2 text-sm lg:text-base">
-							{totalMatches >= 500 && <button className="group relative px-2 py-1 rounded-md bg-neutral-600 hover:bg-neutral-500">
-								<div className="flex flex-row gap-4" onClick={() => setIsWinnerStays(!isWinnerStays)}>
+							{totalMatches >= 500 && <button className="group relative rounded-md bg-neutral-600 hover:bg-neutral-500">
+								<div className="flex flex-row gap-4 px-2 py-1" onClick={() => setIsWinnerStays(!isWinnerStays)}>
 									<div className="z-10">🎲</div>
 									<div className="z-10">🏆</div>
 								</div>
-								<div className={`absolute top-0 translate-y-0 ${isWinnerStays ? 'translate-x-7' : '-translate-x-2'} h-7 w-9 lg:w-10 lg:h-8 rounded-md bg-slate-500 group-hover:bg-slate-400 transition-transform`}>&nbsp;</div>
+								<div className={`absolute top-0 translate-y-0 ${isWinnerStays ? 'translate-x-9' : 'translate-x-0'} h-full w-[2.125rem] lg:w-10 rounded-md bg-slate-500 group-hover:bg-slate-400 transition-transform`}>&nbsp;</div>
 								<div className="hidden group-hover:block px-2 py-1 absolute top-8 lg:top-9 left-1/2 -translate-x-1/2 z-10 whitespace-nowrap text-black bg-white/70 rounded-md">
 									<div>
 										<span className="hidden lg:inline-block">Matchup Type:&nbsp;</span>
@@ -190,30 +190,29 @@ export default function FavesPage() {
 								</div>
 							</button>}
 							<div className="group relative px-2 py-1 rounded-md bg-slate-800">
-								<div className="flex flex-row items-center gap-1">
-									<span>{comparison.length} / {pokemon.length}&nbsp;</span>
-									<span className="hidden lg:inline">seen</span>
-									<PokeballIcon className="lg:hidden text-red align-middle" />
+								<div className="flex flex-row items-center lg:gap-1">
+									<span className="whitespace-nowrap hidden lg:inline">{comparison.length} / {pokemon.length} seen</span>
+									<span className="lg:hidden">{Math.round(comparison.length / pokemon.length * 1000) / 10}%&nbsp;</span>
+									<PokeballIcon className="lg:hidden" />
 								</div>
 								<div className="hidden group-hover:block lg:group-hover:hidden px-2 py-1 absolute -bottom-8 left-1/2 -translate-x-1/2 z-10 whitespace-nowrap text-black bg-white/70 rounded-md">
 									{comparison.length} of {pokemon.length} Pokémon Seen
 								</div>
 							</div>
 							<div className="group relative px-2 py-1 rounded-md bg-slate-800">
-								<div className="flex flex-row items-center gap-1">
-									<span>{totalMatches}&nbsp;</span>
-									<span className="hidden lg:inline">compared</span>
-									<span className="lg:hidden">⚔</span>
+								<div className="flex flex-row items-center lg:gap-1">
+									<span className="hidden lg:inline">{totalMatches.toLocaleString()} compared</span>
+									<span className="lg:hidden">{getTruncatedNumber(totalMatches)} ⚔</span>
 								</div>
 								<div className="hidden group-hover:block lg:group-hover:hidden px-2 py-1 absolute -bottom-8 left-1/2 -translate-x-1/2 z-10 whitespace-nowrap text-black bg-white/70 rounded-md">
-									{totalMatches} Matchups Completed
+									{totalMatches.toLocaleString()} Matchups Completed
 								</div>
 							</div>
 							<button className="px-3 py-1 rounded-md bg-neutral-600 hover:bg-neutral-500" onClick={() => setShowFAQ(true)}>?</button>
 							<button className="px-2 py-1 rounded-md bg-red-800 hover:bg-red-700" onClick={reset}>Reset</button>
 						</div>
 						<div className="flex-grow"></div>
-						<h1 className="text-xl md:text-3xl font-bold mb-4 text-center">Which of these two do you like more?</h1>
+						<h1 className="text-xl md:text-3xl font-bold lg:mb-4 text-center">Which of these two do you like more?</h1>
 						<div className="w-full flex flex-row items-center gap-4">
 							{recentWinner && <PokemonHistory pokemon={recentWinner} />}
 							<div className="flex-grow"></div>
@@ -232,7 +231,7 @@ export default function FavesPage() {
 					</>
 				)}
 			</div>
-            {showFAQ && <PopOverlay className="w-[90vw] h-[90vh] md:w-[40vw] md:h-[60vh]">
+            {showFAQ && <PopOverlay className="w-[90vw] h-[80vh] md:w-[40vw] md:h-[60vh]">
                 <div className="flex flex-col md:flex-row gap-4 p-4 py-6 overflow-auto bg-neutral-900 rounded-lg">
                     <div className="flex flex-row items-start md:items-center md:flex-col gap-4 md:gap-1 text-4xl font-bold">
                         <span>Your Favorite Pokemon</span>
@@ -305,7 +304,7 @@ function PokemonList({ title, list }: PokemonListProps) {
 	return (
 		<div className="flex flex-col gap-2 px-4">
 			<h1 className="text-lg font-bold">{title}</h1>
-			<hr className="w-full mx-4 border-slate-600" />
+			<hr className="mx-2 lg:mx-4 border-slate-600" />
 			<div className="flex flex-row gap-2 items-center justify-center flex-wrap">
 				{list.map((pokemon) =>
 					<div key={pokemon.number} className="group relative w-10 h-10 md:w-16 md:h-16">
@@ -330,4 +329,8 @@ function plusMinusNumber(num: number) {
 
 function getEloChangeText(before: number, after: number) {
 	return `${Math.round(before)} ⇒ ${Math.round(after)}`
+}
+
+function getTruncatedNumber(num: number) {
+	return num > 9999 ? `${Math.round(num / 100) / 10}k` : num
 }
