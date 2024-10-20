@@ -6725,7 +6725,7 @@
 		"varieties": [
 		  {
 			"number": 555,
-			"name": "darmanitan-standard",
+			"name": "darmanitan",
 			"image": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/555.png"
 		  },
 		  {
@@ -6735,7 +6735,7 @@
 		  },
 		  {
 			"number": 10177,
-			"name": "darmanitan-galar-standard",
+			"name": "darmanitan-galar",
 			"image": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10177.png"
 		  },
 		  {
@@ -8608,18 +8608,8 @@
 		"varieties": [
 		  {
 			"number": 718,
-			"name": "zygarde-50",
+			"name": "zygarde-50%",
 			"image": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/718.png"
-		  },
-		  {
-			"number": 10118,
-			"name": "zygarde-10-power-construct",
-			"image": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10118.png"
-		  },
-		  {
-			"number": 10119,
-			"name": "zygarde-50-power-construct",
-			"image": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10119.png"
 		  },
 		  {
 			"number": 10120,
@@ -8628,7 +8618,7 @@
 		  },
 		  {
 			"number": 10181,
-			"name": "zygarde-10",
+			"name": "zygarde-10%",
 			"image": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10181.png"
 		  }
 		]
