@@ -165,7 +165,7 @@ export default function FavesPage() {
 	}
 
 	return (
-		<div className="w-screen h-screen flex flex-col text-white overflow-hidden">
+		<div className="w-screen h-dvh flex flex-col text-white overflow-hidden">
 			<Head>
 				<title>Your Favorite Pokemon</title>
 				<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" key="viewport" />
@@ -238,7 +238,7 @@ export default function FavesPage() {
 					</>
 				)}
 			</div>
-            {showFAQ && <PopOverlay className="w-[90vw] h-[80vh] md:w-[40vw] md:h-[60vh]">
+            {showFAQ && <PopOverlay className="w-[90vw] h-[90svh] md:w-[40vw] md:h-[60vh]">
                 <div className="flex flex-col md:flex-row gap-4 p-4 py-6 overflow-auto bg-neutral-900 rounded-lg">
                     <div className="flex flex-row items-start md:items-center md:flex-col gap-4 md:gap-1 text-4xl font-bold">
                         <span>Your Favorite Pokemon</span>
@@ -255,7 +255,7 @@ export default function FavesPage() {
                     </div>
                 </div>
             </PopOverlay>}
-			{showFullList && <PopOverlay className="w-[100vw] h-[100vh] md:w-[60vw] md:h-[80vh]">
+			{showFullList && <PopOverlay className="w-screen h-dvh md:w-[60vw] md:h-[80vh]">
                 <div className="h-full flex flex-col bg-neutral-900 rounded-lg overflow-hidden">
 					<div className="flex flex-col gap-4">
 						<div className="flex flex-row items-start pt-6 px-4 gap-4 md:gap-1 font-bold">

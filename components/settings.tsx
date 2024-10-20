@@ -149,7 +149,7 @@ export default function Settings({ savedSettings, onChangeSettings }: SettingsPr
                     </div>
                 </div>
             </div>
-            {showFAQ && <PopOverlay className="w-[90vw] h-[80vh] md:w-[40vw] md:h-[60vh]">
+            {showFAQ && <PopOverlay className="w-[90vw] h-[90svh] md:w-[40vw] md:h-[60vh]">
                 <div className="flex flex-col md:flex-row gap-4 p-4 py-6 overflow-auto bg-neutral-900 rounded-lg">
                     <div className="flex flex-row md:flex-col flex-wrap md:flex-nowrap gap-1 text-4xl font-bold">
                         <span>Friendly</span>
