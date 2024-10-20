@@ -203,7 +203,7 @@ export default function FavesPage() {
 									<PokeballIcon className="lg:hidden" />
 								</div>
 								<div className="hidden group-hover:block lg:group-hover:hidden px-2 py-1 absolute -bottom-8 left-1/2 -translate-x-1/2 z-10 whitespace-nowrap text-black bg-white/70 rounded-md">
-									{comparison.length} of {pokemon.length} Pokémon Seen
+									{comparison.length.toLocaleString()} of {pokemon.length.toLocaleString()} Pokémon Seen
 								</div>
 							</div>
 							<div className="group relative px-2 py-1 rounded-md bg-slate-800">
@@ -345,10 +345,10 @@ type PokemonListProps = {
 
 function PokemonList({ title, list }: PokemonListProps) {
 	return (
-		<div className="flex flex-col gap-2 px-4">
+		<div className="w-full lg:w-auto flex flex-col gap-2 px-4">
 			<h1 className="text-lg font-bold">{title}</h1>
 			<hr className="mx-2 lg:mx-4 border-slate-600" />
-			<div className="flex flex-row gap-2 items-center justify-center flex-wrap">
+			<div className="grid grid-cols-5 lg:flex lg:flex-row gap-2 items-center justify-center justify-items-center">
 				{list.map((pokemon) => <PokemonWithElo key={pokemon.number} pokemon={pokemon} />)}
 			</div>
 		</div>
