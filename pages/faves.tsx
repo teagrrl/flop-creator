@@ -40,6 +40,7 @@ export default function FavesPage() {
 	const [recentWinner, setRecentWinner] = useState<PokemonChange | undefined>(undefined)
 	const [recentLoser, setRecentLoser] = useState<PokemonChange | undefined>(undefined)
     const [showFAQ, setShowFAQ] = useState<boolean>(false)
+    const [showFullList, setShowFullList] = useState<boolean>(false)
 
 	const leftPokemon = pokemon[leftIndex]
 	const rightPokemon = pokemon[rightIndex]
@@ -47,8 +48,9 @@ export default function FavesPage() {
 
 	const [comparison, setComparison, removeComparison] = useLocalStorage<PokemonScore[]>("comparison", [])
 	const totalMatches = comparison.map((pokemon) => pokemon.matches).reduce((p, q) => p + q, 0) / 2
-	const topTen = Array.from(comparison).sort((p, q) => q.elo - p.elo).slice(0, 10)
-	const bottomTen = Array.from(comparison).sort((p, q) => p.elo - q.elo).slice(0, 10).reverse()
+	const fullList = Array.from(comparison).sort((p, q) => q.elo - p.elo)
+	const topTen = fullList.slice(0, 10)
+	const bottomTen = Array.from(fullList).reverse().slice(0, 10).reverse()
 
 	const [isWinnerStays, setIsWinnerStays] = useLocalStorage<boolean>("winner_stays", false)
 
@@ -157,6 +159,11 @@ export default function FavesPage() {
 		setRightIndex(newRightIndex)
 	}
 
+	function showList() {
+		setShowFAQ(false)
+		setShowFullList(true)
+	}
+
 	return (
 		<div className="w-screen h-screen flex flex-col text-white overflow-hidden">
 			<Head>
@@ -242,11 +249,29 @@ export default function FavesPage() {
                     <div className="flex flex-col gap-2 text-lg">
                         <p>You will be shown two Pokémon. Choose your favorite between the two. And then do it again and again until you&apos;re happy with your top ten list. Yes, it&apos;ll take forever. Yes, there are currently {pokemon.length} Pokémon to look at. There will be more. I&apos;ve tried to hand prune the list so you don&apos;t need to compare all fourteen forms of <a className="underline" href="https://www.serebii.net/pokedex-sm/774.shtml" target="_blank" rel="noreferrer">Minior</a> or every <a className="underline" href="https://bulbapedia.bulbagarden.net/wiki/List_of_Pok%C3%A9mon_with_form_differences#Cosplay_Pikachu" target="_blank" rel="noreferrer">Cosplay Pikachu</a>.</p>
 						<p>The numbers you see are part of the really bad faux-elo rating system I implemented. Maybe it&apos;ll become an actual elo rating system in the future. You might see numbers jump around a bunch but I promise it&apos;ll even out once you have done enough comparisons.</p>
+						<p>If you wanna see your full list of Pokémon ranked from most to least favorite, try <button className="underline" onClick={showList}>this</button>.</p>
 						<p>Have fun clicking on buttons and let me know if you encounter any issues or have any suggestions at <a className="underline" href="https://twitter.com/yoorilikeglass" target="_blank" rel="noreferrer">@yoorilikeglass</a> or <a className="underline" href="https://bsky.app/profile/yoori.space" target="_blank" rel="noreferrer">@yoori.space</a>.</p>
                         <p>This website is powered by <a className="underline" href="https://pokeapi.co/" target="_blank" rel="noreferrer">PokéAPI</a> and <a className="underline" href="https://vercel.com/" target="_blank" rel="noreferrer">Vercel</a>.</p>
                     </div>
                 </div>
             </PopOverlay>}
+			{showFullList && <PopOverlay className="w-[100vw] h-[100vh] md:w-[60vw] md:h-[80vh]">
+                <div className="h-full flex flex-col bg-neutral-900 rounded-lg overflow-hidden">
+					<div className="flex flex-col gap-4">
+						<div className="flex flex-row items-start pt-6 px-4 gap-4 md:gap-1 font-bold">
+							<div className="flex flex-col flex-grow items-center text-lg lg:text-4xl">
+								<span>Your Favorite Pokemon</span>
+								<span>(in order, all of them)</span>
+							</div>
+							<button className="px-4 py-2 font-semibold bg-neutral-700 hover:bg-neutral-600 rounded-md" onClick={() => setShowFullList(false)}>Close</button>
+						</div>
+						<hr className="mx-2 lg:mx-4 border-slate-600" />
+					</div>
+					<div className="grid grid-cols-5 lg:grid-cols-8 justify-items-center pt-4 pb-6 px-4 overflow-x-hidden overflow-y-auto">
+						{fullList.map((pokemon, index) => <PokemonWithElo key={pokemon.number} pokemon={pokemon} rank={index + 1} />)}
+					</div>
+				</div>
+			</PopOverlay>}
 		</div>
 	)
 }
@@ -295,6 +320,24 @@ function PokemonSelector({ pokemon, onSelect }: PokemonSelectorProps) {
 	)
 }
 
+type PokemonWithEloProps = {
+	pokemon: PokemonScore,
+	rank?: number
+}
+
+function PokemonWithElo({ pokemon, rank }: PokemonWithEloProps) {
+	return (
+		<div className="group relative w-10 h-10 md:w-16 md:h-16">
+			<img alt={`${getPokemonName(pokemon.name)} (${Math.round(pokemon.elo ?? 1500)})`} src={pokemon.image} width="100%" height="100%" />
+			<div className="hidden group-hover:block px-2 py-1 absolute top-0 left-1/2 -translate-y-8 -translate-x-1/2 z-10 whitespace-nowrap text-black bg-white/70 rounded-md">
+				{rank && <span className="italic">#{rank}&nbsp;</span>}
+				<span className="font-medium">{getPokemonName(pokemon.name)}&nbsp;</span>
+				<span>({Math.round(pokemon.elo ?? 1500)})</span>
+			</div>
+		</div>
+	)
+}
+
 type PokemonListProps = {
 	title: string,
 	list: PokemonScore[],
@@ -306,14 +349,7 @@ function PokemonList({ title, list }: PokemonListProps) {
 			<h1 className="text-lg font-bold">{title}</h1>
 			<hr className="mx-2 lg:mx-4 border-slate-600" />
 			<div className="flex flex-row gap-2 items-center justify-center flex-wrap">
-				{list.map((pokemon) =>
-					<div key={pokemon.number} className="group relative w-10 h-10 md:w-16 md:h-16">
-						<img alt={`${getPokemonName(pokemon.name)} (${Math.round(pokemon.elo ?? 1500)})`} src={pokemon.image} width="100%" height="100%" />
-						<div className="hidden group-hover:block px-2 py-1 absolute top-0 left-1/2 -translate-y-8 -translate-x-1/2 z-10 whitespace-nowrap text-black bg-white/70 rounded-md">
-							<span className="font-medium">{getPokemonName(pokemon.name)}</span> <span>({Math.round(pokemon.elo ?? 1500)})</span>
-						</div>
-					</div>
-				)}
+				{list.map((pokemon) => <PokemonWithElo key={pokemon.number} pokemon={pokemon} />)}
 			</div>
 		</div>
 	)
@@ -332,5 +368,5 @@ function getEloChangeText(before: number, after: number) {
 }
 
 function getTruncatedNumber(num: number) {
-	return num > 9999 ? `${Math.round(num / 100) / 10}k` : num
+	return num > 9999 ? `${Math.round(num / 100) / 10}k` : num.toLocaleString()
 }
