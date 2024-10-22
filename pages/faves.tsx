@@ -1,9 +1,11 @@
 /* eslint-disable @next/next/no-img-element */
 import React, { useEffect, useState } from "react"
 import Head from "next/head"
+import { twMerge } from "tailwind-merge"
 import { useLocalStorage } from "usehooks-ts"
 import { PokeballIcon } from "@components/icons"
 import PopOverlay from "@components/popoverlay"
+import { properName } from "@helpers/utilities"
 import * as SpeciesJson from "pages/api/species.json"
 
 type SpeciesData = {
@@ -39,6 +41,7 @@ export default function FavesPage() {
 	const [rightIndex, setRightIndex] = useState<number>(getRandomPokemonIndex())
 	const [recentWinner, setRecentWinner] = useState<PokemonChange | undefined>(undefined)
 	const [recentLoser, setRecentLoser] = useState<PokemonChange | undefined>(undefined)
+	const [showReset, setShowReset] = useState<boolean>(false)
     const [showFAQ, setShowFAQ] = useState<boolean>(false)
     const [showFullList, setShowFullList] = useState<boolean>(false)
 
@@ -178,49 +181,49 @@ export default function FavesPage() {
 				<meta property="og:site_name" content="Your Favorite Pokemon" key="ogsitename" />
 				<meta property="og:title" content="Your Favorite Pokemon" key="ogtitle" />
 			</Head>
-			<div className="h-full py-2 lg:py-6 flex flex-col items-center justify-center bg-black">
+			<div className="h-full py-2 md:py-6 flex flex-col items-center overflow-y-auto bg-black">
 				{isClient && pokemon.length && (
 					<>
-						<div className="flex flex-row justify-center gap-2 text-sm lg:text-base">
+						<div className="flex flex-row justify-center gap-2 text-sm md:text-base">
 							{totalMatches >= 500 && <button className="group relative rounded-md bg-neutral-600 hover:bg-neutral-500">
-								<div className="flex flex-row gap-4 px-2 py-1" onClick={() => setIsWinnerStays(!isWinnerStays)}>
+								<div className="flex flex-row gap-4 p-2 py-1" onClick={() => setIsWinnerStays(!isWinnerStays)}>
 									<div className="z-10">🎲</div>
 									<div className="z-10">🏆</div>
 								</div>
-								<div className={`absolute top-0 translate-y-0 ${isWinnerStays ? 'translate-x-9' : 'translate-x-0'} h-full w-[2.125rem] lg:w-10 rounded-md bg-slate-500 group-hover:bg-slate-400 transition-transform`}>&nbsp;</div>
-								<div className="hidden group-hover:block px-2 py-1 absolute top-8 lg:top-9 left-1/2 -translate-x-1/2 z-10 whitespace-nowrap text-black bg-white/70 rounded-md">
+								<div className={`absolute top-0 translate-y-0 ${isWinnerStays ? 'translate-x-9' : 'translate-x-0'} h-full w-[2.125rem] md:w-10 rounded-md bg-slate-500 group-hover:bg-slate-400 transition-transform`}>&nbsp;</div>
+								<div className="hidden group-hover:block p-2 py-1 absolute top-8 md:top-9 left-1/2 -translate-x-1/2 z-10 whitespace-nowrap text-black bg-white/70 rounded-md">
 									<div>
-										<span className="hidden lg:inline-block">Matchup Type:&nbsp;</span>
+										<span className="hidden md:inline-block">Matchup Type:&nbsp;</span>
 										<span>{isWinnerStays ? "Winner Stays" : "Random"}</span>
 									</div>
 									{isWinnerStays && <small>(until they don&apos;t)</small>}
 								</div>
 							</button>}
-							<div className="group relative px-2 py-1 rounded-md bg-slate-800">
-								<div className="flex flex-row items-center lg:gap-1">
-									<span className="whitespace-nowrap hidden lg:inline">{comparison.length} / {pokemon.length} seen</span>
-									<span className="lg:hidden">{Math.round(comparison.length / pokemon.length * 1000) / 10}%&nbsp;</span>
-									<PokeballIcon className="lg:hidden" />
+							<div className="group relative p-2 py-1 rounded-md bg-slate-800">
+								<div className="flex flex-row items-center md:gap-1">
+									<span className="whitespace-nowrap hidden md:inline">{comparison.length} / {pokemon.length} seen</span>
+									<span className="md:hidden">{Math.round(comparison.length / pokemon.length * 1000) / 10}%&nbsp;</span>
+									<PokeballIcon className="md:hidden" />
 								</div>
-								<div className="hidden group-hover:block lg:group-hover:hidden px-2 py-1 absolute -bottom-8 left-1/2 -translate-x-1/2 z-10 whitespace-nowrap text-black bg-white/70 rounded-md">
+								<div className="hidden group-hover:block md:group-hover:hidden p-2 py-1 absolute -bottom-8 left-1/2 -translate-x-1/2 z-10 whitespace-nowrap text-black bg-white/70 rounded-md">
 									{comparison.length.toLocaleString()} of {pokemon.length.toLocaleString()} Pokémon Seen
 								</div>
 							</div>
-							<div className="group relative px-2 py-1 rounded-md bg-slate-800">
-								<div className="flex flex-row items-center lg:gap-1">
-									<span className="hidden lg:inline">{totalMatches.toLocaleString()} compared</span>
-									<span className="lg:hidden">{getTruncatedNumber(totalMatches)} ⚔</span>
+							<div className="group relative p-2 py-1 rounded-md bg-slate-800">
+								<div className="flex flex-row items-center md:gap-1">
+									<span className="hidden md:inline">{totalMatches.toLocaleString()} compared</span>
+									<span className="md:hidden">{getTruncatedNumber(totalMatches)} ⚔</span>
 								</div>
-								<div className="hidden group-hover:block lg:group-hover:hidden px-2 py-1 absolute -bottom-8 left-1/2 -translate-x-1/2 z-10 whitespace-nowrap text-black bg-white/70 rounded-md">
+								<div className="hidden group-hover:block md:group-hover:hidden p-2 py-1 absolute -bottom-8 left-1/2 -translate-x-1/2 z-10 whitespace-nowrap text-black bg-white/70 rounded-md">
 									{totalMatches.toLocaleString()} Matchups Completed
 								</div>
 							</div>
-							<button className="px-3 py-1 rounded-md bg-neutral-600 hover:bg-neutral-500" onClick={() => setShowFAQ(true)}>?</button>
-							<button className="px-2 py-1 rounded-md bg-red-800 hover:bg-red-700" onClick={reset}>Reset</button>
+							<button className="p-3 py-1 rounded-md bg-neutral-600 hover:bg-neutral-500" onClick={() => setShowFAQ(true)}>?</button>
+							<button className="p-2 py-1 rounded-md bg-red-800 hover:bg-red-700" onClick={() => setShowReset(true)}>Reset</button>
 						</div>
 						<div className="flex-grow"></div>
-						<h1 className="text-xl md:text-3xl font-bold lg:mb-4 text-center">Which of these two do you like more?</h1>
-						<div className="w-full flex flex-row items-center gap-4">
+						<h1 className="text-xl md:text-3xl font-bold py-2 md:py-4 text-center">Which of these two do you like more?</h1>
+						<div className="relative w-full flex flex-row items-center gap-4 overflow-hidden">
 							{recentWinner && <PokemonHistory pokemon={recentWinner} />}
 							<div className="flex-grow"></div>
 							<PokemonSelector pokemon={leftPokemon} onSelect={() => comparePokemon(leftPokemon, rightPokemon)} />
@@ -238,15 +241,24 @@ export default function FavesPage() {
 					</>
 				)}
 			</div>
-            {showFAQ && <PopOverlay className="w-[90vw] h-[90svh] md:w-[40vw] md:h-[60vh]">
-                <div className="flex flex-col md:flex-row gap-4 p-4 py-6 overflow-auto bg-neutral-900 rounded-lg">
-                    <div className="flex flex-row items-start md:items-center md:flex-col gap-4 md:gap-1 text-4xl font-bold">
+			{showReset && <PopOverlay className="w-[90vw] h-[30vh] md:w-[40vw] md:h-[25vh]">
+				<div className="w-full h-full flex flex-col justify-between items-center gap-4 p-4 py-6 bg-neutral-900 rounded-lg">
+					<h4 className="text-2xl font-bold text-center">Are you sure you wanna reset your data?</h4>
+					<div className="w-full flex flex-row justify-end gap-4">
+						<button className="p-4 py-2 rounded-md bg-neutral-600 hover:bg-neutral-500" onClick={() => setShowReset(false)}>Nevermind</button>
+						<button className="p-4 py-2 rounded-md bg-red-800 hover:bg-red-700" onClick={reset}>Reset My Data</button>
+					</div>
+				</div>
+			</PopOverlay>}
+            {showFAQ && <PopOverlay className="w-[90vw] h-[90svh] lg:w-[75vw] lg:h-[60vh]">
+                <div className="w-full h-full flex flex-col lg:flex-row gap-4 p-4 py-6 overflow-auto bg-neutral-900 rounded-lg">
+                    <div className="flex flex-row items-start lg:items-center lg:flex-col gap-4 lg:gap-1 text-4xl font-bold">
                         <span>Your Favorite Pokemon</span>
                         <div className="flex flex-grow justify-center items-end">
-                            <button className="px-4 py-2 font-semibold text-base bg-neutral-700 hover:bg-neutral-600 rounded-md" onClick={() => setShowFAQ(false)}>Close</button>
+                            <button className="p-4 py-2 font-semibold text-base bg-neutral-700 hover:bg-neutral-600 rounded-md" onClick={() => setShowFAQ(false)}>Close</button>
                         </div>
                     </div>
-                    <div className="flex flex-col gap-2 text-lg">
+                    <div className="flex flex-col gap-2 justify-between text-lg">
                         <p>You will be shown two Pokémon. Choose your favorite between the two. And then do it again and again until you&apos;re happy with your top ten list. Yes, it&apos;ll take forever. Yes, there are currently {pokemon.length} Pokémon to look at. There will be more. I&apos;ve tried to hand prune the list so you don&apos;t need to compare all fourteen forms of <a className="underline" href="https://www.serebii.net/pokedex-sm/774.shtml" target="_blank" rel="noreferrer">Minior</a> or every <a className="underline" href="https://bulbapedia.bulbagarden.net/wiki/List_of_Pok%C3%A9mon_with_form_differences#Cosplay_Pikachu" target="_blank" rel="noreferrer">Cosplay Pikachu</a>.</p>
 						<p>The numbers you see are part of the really bad faux-elo rating system I implemented. Maybe it&apos;ll become an actual elo rating system in the future. You might see numbers jump around a bunch but I promise it&apos;ll even out once you have done enough comparisons.</p>
 						<p>If you wanna see your full list of Pokémon ranked from most to least favorite, try <button className="underline" onClick={showList}>this</button>.</p>
@@ -255,19 +267,19 @@ export default function FavesPage() {
                     </div>
                 </div>
             </PopOverlay>}
-			{showFullList && <PopOverlay className="w-screen h-dvh md:w-[60vw] md:h-[80vh]">
+			{showFullList && <PopOverlay className="w-screen h-dvh lg:w-[60vw] lg:h-[80vh]">
                 <div className="h-full flex flex-col bg-neutral-900 rounded-lg overflow-hidden">
 					<div className="flex flex-col gap-4">
-						<div className="flex flex-row items-start pt-6 px-4 gap-4 md:gap-1 font-bold">
+						<div className="flex flex-row items-start pt-6 px-4 gap-4 lg:gap-1 font-bold">
 							<div className="flex flex-col flex-grow items-center text-lg lg:text-4xl">
 								<span>Your Favorite Pokemon</span>
 								<span>(in order, all of them)</span>
 							</div>
-							<button className="px-4 py-2 font-semibold bg-neutral-700 hover:bg-neutral-600 rounded-md" onClick={() => setShowFullList(false)}>Close</button>
+							<button className="p-4 py-2 font-semibold bg-neutral-700 hover:bg-neutral-600 rounded-md" onClick={() => setShowFullList(false)}>Close</button>
 						</div>
 						<hr className="mx-2 lg:mx-4 border-slate-600" />
 					</div>
-					<div className="grid grid-cols-5 lg:grid-cols-8 justify-items-center pt-4 pb-6 px-4 overflow-x-hidden overflow-y-auto">
+					<div className="grid grid-cols-5 lg:grid-cols-8 justify-items-center p-4 pt-4 pb-6 overflow-x-hidden overflow-y-auto">
 						{fullList.map((pokemon, index) => <PokemonWithElo key={pokemon.number} pokemon={pokemon} rank={index + 1} />)}
 					</div>
 				</div>
@@ -277,21 +289,22 @@ export default function FavesPage() {
 }
 
 type PokemonHistoryProps = {
-	pokemon: PokemonChange,
+	pokemon: PokemonChange
+	className?: string
 }
 
-function PokemonHistory({ pokemon }: PokemonHistoryProps) {
+function PokemonHistory({ pokemon, className }: PokemonHistoryProps) {
 	return (
-		<div className="group hidden md:block relative px-6 text-center text-xs">
+		<div className={twMerge("hidden md:block group relative px-6 text-center text-xs", className)}>
 			<div className="relative h-20 w-20">
 				<img alt={pokemon.name} src={pokemon.image} width="100%" height="100%" />
 			</div>
-			<span className={`absolute -bottom-3 left-1/2 -translate-x-1/2 z-10 px-2 py-1 rounded-md ${pokemon.change > 0 ? "bg-emerald-600" : ""}${pokemon.change === 0 ? "bg-neutral-600" : ""}${pokemon.change < 0 ? "bg-rose-600" : ""}`}>
+			<span className={`absolute -bottom-3 left-1/2 -translate-x-1/2 z-10 p-2 py-1 rounded-md ${pokemon.change > 0 ? "bg-emerald-600" : ""}${pokemon.change === 0 ? "bg-neutral-600" : ""}${pokemon.change < 0 ? "bg-rose-600" : ""}`}>
 				{plusMinusNumber(Math.round(pokemon.change))}
 			</span>
 			{pokemon.hover && (
-				<div className="hidden group-hover:block absolute -top-4 left-1/2 -translate-x-1/2 z-10 px-2 py-1 whitespace-nowrap text-black bg-white/70 rounded-md">
-					<p className="font-bold">{getPokemonName(pokemon.name)}</p>
+				<div className="hidden group-hover:block absolute -top-4 left-1/2 -translate-x-1/2 z-10 p-2 py-1 whitespace-nowrap text-black bg-white/70 rounded-md">
+					<p className="font-bold">{properName(pokemon.name)}</p>
 					<p>{pokemon.hover}</p>
 				</div>
 			)}
@@ -300,8 +313,8 @@ function PokemonHistory({ pokemon }: PokemonHistoryProps) {
 }
 
 type PokemonSelectorProps = {
-	pokemon: PokemonData,
-	onSelect?: () => void,
+	pokemon: PokemonData
+	onSelect?: () => void
 }
 
 function PokemonSelector({ pokemon, onSelect }: PokemonSelectorProps) {
@@ -311,27 +324,27 @@ function PokemonSelector({ pokemon, onSelect }: PokemonSelectorProps) {
 				<img alt={pokemon.name} src={pokemon.image} width="100%" height="100%" />
 			</div>
 			<button
-				className="px-3 py-1 rounded-md bg-slate-700 hover:bg-slate-500"
+				className="p-3 py-1 rounded-md bg-slate-700 hover:bg-slate-500"
 				onClick={onSelect}
 			>
-				{getPokemonName(pokemon.name)}
+				{properName(pokemon.name)}
 			</button>
 		</div>
 	)
 }
 
 type PokemonWithEloProps = {
-	pokemon: PokemonScore,
+	pokemon: PokemonScore
 	rank?: number
 }
 
 function PokemonWithElo({ pokemon, rank }: PokemonWithEloProps) {
 	return (
 		<div className="group relative w-10 h-10 md:w-16 md:h-16">
-			<img alt={`${getPokemonName(pokemon.name)} (${Math.round(pokemon.elo ?? 1500)})`} src={pokemon.image} width="100%" height="100%" />
-			<div className="hidden group-hover:block px-2 py-1 absolute top-0 left-1/2 -translate-y-8 -translate-x-1/2 z-10 whitespace-nowrap text-black bg-white/70 rounded-md">
+			<img alt={`${properName(pokemon.name)} (${Math.round(pokemon.elo ?? 1500)})`} src={pokemon.image} width="100%" height="100%" />
+			<div className="hidden group-hover:block p-2 py-1 absolute top-0 left-1/2 -translate-y-8 -translate-x-1/2 z-10 whitespace-nowrap text-black bg-white/70 rounded-md">
 				{rank && <span className="italic">#{rank}&nbsp;</span>}
-				<span className="font-medium">{getPokemonName(pokemon.name)}&nbsp;</span>
+				<span className="font-medium">{properName(pokemon.name)}&nbsp;</span>
 				<span>({Math.round(pokemon.elo ?? 1500)})</span>
 			</div>
 		</div>
@@ -339,24 +352,20 @@ function PokemonWithElo({ pokemon, rank }: PokemonWithEloProps) {
 }
 
 type PokemonListProps = {
-	title: string,
-	list: PokemonScore[],
+	title: string
+	list: PokemonScore[]
 }
 
 function PokemonList({ title, list }: PokemonListProps) {
 	return (
-		<div className="w-full lg:w-auto flex flex-col gap-2 px-4">
+		<div className="w-full md:w-auto flex flex-col gap-2 px-4">
 			<h1 className="text-lg font-bold">{title}</h1>
-			<hr className="mx-2 lg:mx-4 border-slate-600" />
-			<div className="grid grid-cols-5 lg:flex lg:flex-row gap-2 items-center justify-center justify-items-center">
+			<hr className="mx-2 md:mx-4 border-slate-600" />
+			<div className="grid grid-cols-5 md:flex md:flex-row gap-2 items-center justify-center justify-items-center">
 				{list.map((pokemon) => <PokemonWithElo key={pokemon.number} pokemon={pokemon} />)}
 			</div>
 		</div>
 	)
-}
-
-function getPokemonName(name: string) {
-	return name.split("-").map((word) => (word[0].toUpperCase() + word.slice(1))).join(" ")
 }
 
 function plusMinusNumber(num: number) {
