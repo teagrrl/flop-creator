@@ -51,8 +51,9 @@ export default function FavesPage() {
 	//console.log(leftIndex, leftPokemon, rightIndex, rightPokemon)
 
 	const [comparison, setComparison, removeComparison] = useLocalStorage<PokemonScore[]>("comparison", [])
-	const totalMatches = comparison.map((pokemon) => pokemon.matches).reduce((p, q) => p + q, 0) / 2
-	const mostMatches = comparison.reduce((p, q) => { return p.matches > q.matches ? p : q }).matches
+	const comparisonMatches = comparison.map((pokemon) => pokemon.matches)
+	const totalMatches = comparisonMatches.reduce((p, q) => p + q, 0) / 2
+	const mostMatches = comparisonMatches.reduce((p, q) => p > q ? p : q, 0)
 	const fullList = Array.from(comparison).sort((p, q) => q.elo - p.elo)
 	const topTen = fullList.slice(0, 10)
 	const bottomTen = fullList.slice(-10)
