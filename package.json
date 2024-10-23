@@ -9,6 +9,7 @@
 		"lint": "next lint"
 	},
 	"dependencies": {
+		"@floating-ui/react": "^0.26.25",
 		"chart.js": "^4.1.2",
 		"next": "^14.2.15",
 		"pokenode-ts": "^1.20.0",
