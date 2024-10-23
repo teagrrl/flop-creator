@@ -31,19 +31,20 @@ const MINIMUM_CHANGE_PERCENTAGE = 0.004
 
 export default function FavesPage() {
 	const [isClient, setIsClient] = useState(false)
-  
+
 	useEffect(() => { setIsClient(true) }, []) // janky hack lol
 
-    const data: SpeciesData = SpeciesJson
+	const data: SpeciesData = SpeciesJson
 	const pokemon = data.pokemon.map((model) => model.varieties).flat()
 
+	const [winnerCount, setWinnerCount] = useState<number>(0)
 	const [leftIndex, setLeftIndex] = useState<number>(getRandomPokemonIndex())
 	const [rightIndex, setRightIndex] = useState<number>(getRandomPokemonIndex())
 	const [recentWinner, setRecentWinner] = useState<PokemonChange | undefined>(undefined)
 	const [recentLoser, setRecentLoser] = useState<PokemonChange | undefined>(undefined)
 	const [showReset, setShowReset] = useState<boolean>(false)
-    const [showFAQ, setShowFAQ] = useState<boolean>(false)
-    const [showFullList, setShowFullList] = useState<boolean>(false)
+	const [showFAQ, setShowFAQ] = useState<boolean>(false)
+	const [showFullList, setShowFullList] = useState<boolean>(false)
 
 	const leftPokemon = pokemon[leftIndex]
 	const rightPokemon = pokemon[rightIndex]
@@ -51,9 +52,10 @@ export default function FavesPage() {
 
 	const [comparison, setComparison, removeComparison] = useLocalStorage<PokemonScore[]>("comparison", [])
 	const totalMatches = comparison.map((pokemon) => pokemon.matches).reduce((p, q) => p + q, 0) / 2
+	const mostMatches = comparison.reduce((p, q) => { return p.matches > q.matches ? p : q }).matches
 	const fullList = Array.from(comparison).sort((p, q) => q.elo - p.elo)
 	const topTen = fullList.slice(0, 10)
-	const bottomTen = Array.from(fullList).reverse().slice(0, 10).reverse()
+	const bottomTen = fullList.slice(-10)
 
 	const [isWinnerStays, setIsWinnerStays] = useLocalStorage<boolean>("winner_stays", false)
 
@@ -90,12 +92,14 @@ export default function FavesPage() {
 			clone.push(foundLoser)
 		}
 		setComparison(clone)
-		const mostMatches = clone.reduce((p, q) => { return p.matches > q.matches ? p : q }).matches
-		if(isWinnerStays && foundWinner.matches < mostMatches) {
+		// winner can't hog the seat (but they can at least sit down a little)
+		if(isWinnerStays && (foundWinner.matches < mostMatches || winnerCount < 3)) {
 			randomizeLoser(loser)
 		} else {
 			randomizePokemon()
 		}
+		//console.log(foundWinner.matches, mostMatches, foundWinner.number === recentWinner?.number ? winnerCount + 1 : 0)
+		setWinnerCount(foundWinner.number === recentWinner?.number ? winnerCount + 1 : 0)
 		setRecentWinner({ ...foundWinner, change: foundWinner.elo - winnerElo, hover: getEloChangeText(winnerElo,foundWinner.elo) })
 		setRecentLoser({ ...foundLoser, change: foundLoser.elo - loserElo, hover: getEloChangeText(loserElo, foundLoser.elo) })
 	}
@@ -133,6 +137,7 @@ export default function FavesPage() {
 	function reset() {
 		removeComparison()
 		randomizePokemon()
+		setWinnerCount(0)
 		setRecentWinner(undefined)
 		setRecentLoser(undefined)
 		setIsWinnerStays(false)
@@ -266,25 +271,25 @@ export default function FavesPage() {
 					</div>
 				</div>
 			</PopOverlay>}
-            {showFAQ && <PopOverlay className="w-[90vw] h-[90svh] lg:w-[75vw] lg:h-[60vh]">
-                <div className="w-full h-full flex flex-col lg:flex-row gap-4 p-4 py-6 overflow-auto bg-neutral-900 rounded-lg">
-                    <div className="flex flex-row items-start lg:items-center lg:flex-col gap-4 lg:gap-1 text-4xl font-bold">
-                        <span>Your Favorite Pokemon</span>
-                        <div className="flex flex-grow justify-center items-end">
-                            <button className="p-4 py-2 font-semibold text-base bg-neutral-700 hover:bg-neutral-600 rounded-md" onClick={() => setShowFAQ(false)}>Close</button>
-                        </div>
-                    </div>
-                    <div className="flex flex-col gap-2 justify-between text-lg">
-                        <p>You will be shown two Pokémon. Choose your favorite between the two. And then do it again and again until you&apos;re happy with your top ten list. Yes, it&apos;ll take forever. Yes, there are currently {pokemon.length} Pokémon to look at. There will be more. I&apos;ve tried to hand prune the list so you don&apos;t need to compare all fourteen forms of <a className="underline" href="https://www.serebii.net/pokedex-sm/774.shtml" target="_blank" rel="noreferrer">Minior</a> or every <a className="underline" href="https://bulbapedia.bulbagarden.net/wiki/List_of_Pok%C3%A9mon_with_form_differences#Cosplay_Pikachu" target="_blank" rel="noreferrer">Cosplay Pikachu</a>.</p>
+			{showFAQ && <PopOverlay className="w-[90vw] h-[90svh] lg:w-[75vw] lg:h-[60vh]">
+				<div className="w-full h-full flex flex-col lg:flex-row gap-4 p-4 py-6 overflow-auto bg-neutral-900 rounded-lg">
+					<div className="flex flex-row items-start lg:items-center lg:flex-col gap-4 lg:gap-1 text-4xl font-bold">
+						<span>Your Favorite Pokemon</span>
+						<div className="flex flex-grow justify-center items-end">
+							<button className="p-4 py-2 font-semibold text-base bg-neutral-700 hover:bg-neutral-600 rounded-md" onClick={() => setShowFAQ(false)}>Close</button>
+						</div>
+					</div>
+					<div className="flex flex-col gap-2 justify-between text-lg">
+						<p>You will be shown two Pokémon. Choose your favorite between the two. And then do it again and again until you&apos;re happy with your top ten list. Yes, it&apos;ll take forever. Yes, there are currently {pokemon.length} Pokémon to look at. There will be more. I&apos;ve tried to hand prune the list so you don&apos;t need to compare all fourteen forms of <a className="underline" href="https://www.serebii.net/pokedex-sm/774.shtml" target="_blank" rel="noreferrer">Minior</a> or every <a className="underline" href="https://bulbapedia.bulbagarden.net/wiki/List_of_Pok%C3%A9mon_with_form_differences#Cosplay_Pikachu" target="_blank" rel="noreferrer">Cosplay Pikachu</a>.</p>
 						<p>The numbers you see are part of the really bad faux-elo rating system I implemented. Maybe it&apos;ll become an actual elo rating system in the future. You might see numbers jump around a bunch but I promise it&apos;ll even out once you have done enough comparisons.</p>
 						<p>If you wanna see your full list of Pokémon ranked from most to least favorite, try <button className="underline" onClick={showList}>this</button>.</p>
 						<p>Have fun clicking on buttons and let me know if you encounter any issues or have any suggestions at <a className="underline" href="https://twitter.com/yoorilikeglass" target="_blank" rel="noreferrer">@yoorilikeglass</a> or <a className="underline" href="https://bsky.app/profile/yoori.space" target="_blank" rel="noreferrer">@yoori.space</a>.</p>
-                        <p>This website is powered by <a className="underline" href="https://pokeapi.co/" target="_blank" rel="noreferrer">PokéAPI</a> and <a className="underline" href="https://vercel.com/" target="_blank" rel="noreferrer">Vercel</a>.</p>
-                    </div>
-                </div>
-            </PopOverlay>}
+						<p>This website is powered by <a className="underline" href="https://pokeapi.co/" target="_blank" rel="noreferrer">PokéAPI</a> and <a className="underline" href="https://vercel.com/" target="_blank" rel="noreferrer">Vercel</a>.</p>
+					</div>
+				</div>
+			</PopOverlay>}
 			{showFullList && <PopOverlay className="w-screen h-dvh lg:w-[60vw] lg:h-[80vh]">
-                <div className="h-full flex flex-col bg-neutral-900 rounded-lg overflow-hidden">
+				<div className="h-full flex flex-col bg-neutral-900 rounded-lg overflow-hidden">
 					<div className="flex flex-col gap-4">
 						<div className="flex flex-row items-start pt-6 px-4 gap-4 lg:gap-1 font-bold">
 							<div className="flex flex-col flex-grow items-center text-lg lg:text-4xl">
