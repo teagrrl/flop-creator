@@ -133,23 +133,39 @@ export default function FavesPage() {
 	function reset() {
 		removeComparison()
 		randomizePokemon()
+		setRecentWinner(undefined)
+		setRecentLoser(undefined)
 		setIsWinnerStays(false)
+		setShowReset(false)
 	}
 
-	function getRandomPokemonIndex() {
-		return Math.floor(Math.random() * pokemon.length)
+	function getRandomPokemonIndex(loser?: PokemonData) {
+		if(loser) {
+			const loserElo = comparison.find((pokemon) => pokemon.number === loser.number)?.elo ?? STARTING_ELO
+			// hopefully gain a better match
+			const filteredPokemon = pokemon.filter((p1) => {
+				const eloThreshold = loserElo * 0.75
+				const pkmnWithElo = comparison.find((p2) => p1.number === p2.number)
+				return (pkmnWithElo ? pkmnWithElo.elo : STARTING_ELO) > eloThreshold
+			})
+			//console.log(`${filteredPokemon.length} of ${pokemon.length} have more than ${Math.round(loserElo)} * 0.75 = ${Math.round(loserElo * 0.75)}`)
+			const randomPokemon = filteredPokemon[Math.floor(Math.random() * filteredPokemon.length)]
+			return pokemon.findIndex((pokemon) => pokemon.number === randomPokemon.number)
+		} else {
+			return Math.floor(Math.random() * pokemon.length)
+		}
 	}
 
 	function randomizeLoser(loser: PokemonData) {
 		const loserIndex = pokemon.findIndex((pokemon) => pokemon.number === loser.number)
-		let newIndex = getRandomPokemonIndex()
+		let newIndex = getRandomPokemonIndex(loser)
 		if(loserIndex < 0) {
 			randomizePokemon()
 		} else if(loserIndex === leftIndex) {
-			while(leftIndex === newIndex) newIndex = getRandomPokemonIndex()
+			while(leftIndex === newIndex) newIndex = getRandomPokemonIndex(loser)
 			setLeftIndex(newIndex)
 		} else {
-			while(rightIndex === newIndex) newIndex = getRandomPokemonIndex()
+			while(rightIndex === newIndex) newIndex = getRandomPokemonIndex(loser)
 			setRightIndex(newIndex)
 		}
 	}
@@ -241,10 +257,10 @@ export default function FavesPage() {
 					</>
 				)}
 			</div>
-			{showReset && <PopOverlay className="w-[90vw] h-[30vh] md:w-[40vw] md:h-[25vh]">
-				<div className="w-full h-full flex flex-col justify-between items-center gap-4 p-4 py-6 bg-neutral-900 rounded-lg">
+			{showReset && <PopOverlay className="w-[90vw] md:w-auto">
+				<div className="flex flex-col justify-between items-center gap-4 p-4 py-6 bg-neutral-900 rounded-lg">
 					<h4 className="text-2xl font-bold text-center">Are you sure you wanna reset your data?</h4>
-					<div className="w-full flex flex-row justify-end gap-4">
+					<div className="w-full flex flex-row justify-between md:justify-end gap-4">
 						<button className="p-4 py-2 rounded-md bg-neutral-600 hover:bg-neutral-500" onClick={() => setShowReset(false)}>Nevermind</button>
 						<button className="p-4 py-2 rounded-md bg-red-800 hover:bg-red-700" onClick={reset}>Reset My Data</button>
 					</div>
