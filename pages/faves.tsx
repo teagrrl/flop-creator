@@ -210,8 +210,8 @@ export default function FavesPage() {
 						<div className="flex flex-row justify-center gap-2 text-sm md:text-base">
 							{totalMatches >= 500 && (
 								<button className="rounded-md bg-neutral-600 hover:bg-neutral-500" onClick={() => setIsWinnerStays(!isWinnerStays)}>
-									<Tooltip offset={4} tooltip={
-										<div className="p-2 py-1 text-sm whitespace-nowrap text-black bg-white/70 rounded-md">
+									<Tooltip tooltip={
+										<div className="text-sm whitespace-nowrap">
 											<div>
 												<span className="hidden md:inline-block">Matchup Type:&nbsp;</span>
 												<span>{isWinnerStays ? "Winner Stays" : "Random"}</span>
@@ -229,9 +229,8 @@ export default function FavesPage() {
 							)}
 							<Tooltip
 								className="p-2 py-1 rounded-md bg-slate-800"
-								offset={4}
 								tooltip={
-									<div className="md:hidden p-2 py-1 text-sm text-black bg-white/70 rounded-md">
+									<div className="md:hidden text-sm">
 										{comparison.length.toLocaleString()} of {pokemon.length.toLocaleString()} Pokémon Seen
 									</div>
 								}
@@ -244,9 +243,8 @@ export default function FavesPage() {
 							</Tooltip>
 							<Tooltip
 								className="p-2 py-1 rounded-md bg-slate-800"
-								offset={4}
 								tooltip={
-									<div className="md:hidden p-2 py-1 text-sm whitespace-nowrap text-black bg-white/70 rounded-md">
+									<div className="md:hidden text-sm whitespace-nowrap">
 										{totalMatches.toLocaleString()} Matchups Completed
 									</div>
 								}
@@ -336,7 +334,7 @@ function PokemonHistory({ pokemon, className }: PokemonHistoryProps) {
 		<Tooltip
 			className={twMerge("hidden md:block px-6 text-center text-xs", className)}
 			tooltip={pokemon.hover && (
-				<div className="p-2 py-1 text-center text-xs text-black bg-white/70 rounded-md">
+				<div className="text-center text-xs">
 					<p className="font-bold">{properName(pokemon.name)}</p>
 					<p>{pokemon.hover}</p>
 				</div>
@@ -381,11 +379,11 @@ type PokemonWithEloProps = {
 function PokemonWithElo({ pokemon, rank }: PokemonWithEloProps) {
 	return (
 		<Tooltip className="w-10 h-10 md:w-16 md:h-16" tooltip={
-			<div className="p-2 py-1 rounded-md text-black bg-white/70">
+			<>
 				{rank && <span className="italic">#{rank}&nbsp;</span>}
 				<span className="font-medium">{properName(pokemon.name)}&nbsp;</span>
 				<span>({Math.round(pokemon.elo ?? 1500)})</span>
-			</div>
+			</>
 		}>
 			<img alt={`${properName(pokemon.name)} (${Math.round(pokemon.elo ?? 1500)})`} src={pokemon.image} width="100%" height="100%" />
 		</Tooltip>

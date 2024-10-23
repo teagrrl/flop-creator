@@ -1,5 +1,18 @@
-import { autoUpdate, flip, FloatingPortal, offset as MiddlewareOffset, Placement, shift, useFloating, useFocus, useHover, useInteractions, useRole } from "@floating-ui/react"
-import React, { ReactNode, useState } from "react"
+import React, { ReactNode, useRef, useState } from "react"
+import {
+	arrow as MiddlewareArrow,
+	flip as MiddlewareFlip,
+	offset as MiddlewareOffset,
+	shift as MiddlewareShift,
+	FloatingPortal,
+	Placement,
+	autoUpdate,
+	useFloating,
+	useFocus,
+	useHover,
+	useInteractions,
+	useRole
+} from "@floating-ui/react"
 import { twMerge } from "tailwind-merge"
 
 
@@ -12,18 +25,20 @@ type TooltipProps = {
 }
 
 export default function Tooltip({ children, className, offset, position, tooltip }: TooltipProps) {
+	const arrowRef = useRef(null)
 	const [isOpen, setIsOpen] = useState<boolean>(false)
 	
-	const { refs, floatingStyles, context } = useFloating({
+	const { refs, floatingStyles, context, placement, middlewareData } = useFloating({
 		open: isOpen,
 		onOpenChange: setIsOpen,
 		placement: position || "top",
 		// Make sure the tooltip stays on the screen
 		whileElementsMounted: autoUpdate,
 		middleware: [
-			MiddlewareOffset(offset),
-			flip({ fallbackAxisSideDirection: "start" }),
-			shift(),
+			MiddlewareOffset(offset ?? 8),
+			MiddlewareFlip(),
+			MiddlewareShift({ padding: 8 }),
+			MiddlewareArrow({ element: arrowRef }),
 		]
 	})
 	
@@ -36,6 +51,9 @@ export default function Tooltip({ children, className, offset, position, tooltip
 		focus,
 		role,
 	])
+	
+	const arrowSide = placement.split("-")[0] as "top" | "bottom" | "left" | "right"
+	const arrowPlacement = { top: "bottom", right: "left", bottom: "top", left: "right", }[arrowSide]
 
 	return (
 		<>
@@ -44,8 +62,22 @@ export default function Tooltip({ children, className, offset, position, tooltip
 			</div>
 			<FloatingPortal>
 				{isOpen && (
-					<div ref={refs.setFloating} className="z-40" style={floatingStyles} {...getFloatingProps()}>
+					<div
+						ref={refs.setFloating} 
+						className="relative p-2 py-1 z-40 text-black bg-white rounded-md"
+						style={floatingStyles}
+						{...getFloatingProps()}
+					>
 						{tooltip}
+						<div
+							ref={arrowRef}
+							className="absolute w-2 h-2 rotate-45 bg-white"
+							style={{
+								left: middlewareData.arrow?.x,
+								top: middlewareData.arrow?.y,
+								[arrowPlacement]: -4,
+							}}
+						/>
 					</div>
 				)}
 			</FloatingPortal>
